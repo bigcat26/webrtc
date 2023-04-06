@@ -1,0 +1,25 @@
+name: ci-workflow
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: add depot tools to path
+        run: echo "$(pwd)/depot_tools" >> $GITHUB_PATH
+
+      - name: debug
+        run: pwd && ls -l && export && ls -l depot_tools
+
+      - name: check out webrtc
+        run: gclient config --name src --unmanaged https://webrtc.googlesource.com/src.git
+
+      - name: set target os
+        run: echo "target_os = [ 'linux', 'android' ]" >> .gclient
+
+      - name: sync code
+        run: gclient sync --with_branch_heads --with_tags --reset --verbose --no-history --delete_unversioned_trees

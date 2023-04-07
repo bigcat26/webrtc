@@ -71,7 +71,7 @@ jobs:
       - name: build
         run: |
           gclient config --name src --unmanaged ${WEBRTC_REPOSITORY}
-          echo "target_os = ${{ matrix.target_os }}" >> .gclient
+          echo 'target_os = ${{ matrix.target_os }}' >> .gclient
           echo "content of .gclient:"
           cat .gclient
           # gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ needs.prepare.outputs.revision }}

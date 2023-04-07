@@ -37,13 +37,13 @@ jobs:
 
     runs-on: ${{ matrix.runs_on }}
     steps:
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 512
-          swap-size-mb: 1024
-          remove-dotnet: true
-          remove-codeql: true
+      # - name: Maximize build space
+      #   uses: easimon/maximize-build-space@master
+      #   with:
+      #     root-reserve-mb: 512
+      #     swap-size-mb: 1024
+      #     remove-dotnet: true
+      #     remove-codeql: true
 
       - uses: actions/checkout@v3
         with:
@@ -62,23 +62,27 @@ jobs:
           df -h
           echo "Current work directory"
           pwd
-          echo "Files in current work directory"
-          ls -la
-          echo "Files in depot_tools"
-          ls -la depot_tools
+          # echo "Files in current work directory"
+          # ls -la
+          # echo "Files in depot_tools"
+          # ls -la depot_tools
           echo "prepare.revision: ${{ needs.prepare.outputs.revision }}"
 
       - name: build
         run: |
           gclient config --name src --unmanaged ${WEBRTC_REPOSITORY}
           echo 'target_os = ${{ matrix.target_os }}' >> .gclient
-          echo "content of .gclient:"
-          cat .gclient
+          # echo "content of .gclient:"
+          # cat .gclient
           # gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ needs.prepare.outputs.revision }}
           echo "start gclient sync"
           gclient sync --no_bootstrap --shallow --no-history -vv --revision d75b9e9ff07ee42841b4e416629c9fbd4b058905
           echo "start gn gen"
           gn gen out --args="${{ matrix.gnargs }}"
+          echo "Files in current work directory"
+          ls -la
+          echo "Files in out directory"
+          ls -la out
           echo "start ninja"
           ninja -v -C out
 

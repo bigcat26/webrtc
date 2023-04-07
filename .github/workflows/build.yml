@@ -44,12 +44,13 @@ jobs:
           remove-dotnet: true
           remove-codeql: true
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-
       - uses: actions/checkout@v3
         with:
           submodules: recursive
+
+      - name: prepend depot tools to path
+        run: |
+          echo "$(pwd)/depot_tools" >> $GITHUB_PATH
 
       - name: show build debug info
         run: |
@@ -57,10 +58,15 @@ jobs:
           export
           echo "Free disk space:"
           df -h
+          echo "Current work directory"
+          pwd
+          echo "Files in current work directory"
+          ls -la
+          echo "Files in depot_tools"
+          ls -la depot_tools
 
       - name: build
         run: |
-          echo "$(pwd)/depot_tools" >> $GITHUB_PATH
           gclient config --name src --unmanaged https://webrtc.googlesource.com/src.git
           echo "target_os = ${{ matrix.gclient_os }}" >> .gclient
           gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ needs.prepare.outputs.revision }}

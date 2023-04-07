@@ -28,10 +28,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - target_os: linux
+          - os: linux
             arch: x64
             gnargs: strip_debug_info=true enable_stripping=true enable_iterator_debugging=false enable_profiling=false is_clang=false is_debug=false libyuv_use_neon=false rtc_enable_protobuf=false rtc_build_with_neon=false rtc_include_internal_audio_device=false rtc_include_pulse_audio=false rtc_libvpx_build_vp9=false rtc_use_gtk=false treat_warnings_as_errors=false use_aura=false use_custom_libcxx=false use_dbus=false use_gold=true use_goma=false use_lld=false use_ozone=false use_udev=false rtc_build_examples=false rtc_build_tools=false rtc_include_tests=false use_glib=false rtc_use_x11=false use_x11=false rtc_use_pipewire=false enable_paint_preview=false libyuv_disable_jpeg=true libyuv_include_tests=false libyuv_use_gflags=false enable_libaom=false rtc_enable_libevent=false rtc_build_libevent=false rtc_exclude_audio_processing_module=true rtc_include_builtin_audio_codecs=false rtc_include_builtin_video_codecs=false libyuv_use_neon=false rtc_enable_avx2=false rtc_enable_sctp=true rtc_use_h264=false rtc_build_libsrtp=true rtc_build_libvpx=false rtc_build_opus=false rtc_include_ilbc=false rtc_include_opus=false rtc_enable_protobuf=false toolkit_views=false
-            gclient_os: '["linux"]'
+            target_os: '["linux"]'
             runs_on: ubuntu-22.04
             desc: pure datachannel
 
@@ -51,8 +51,7 @@ jobs:
 
       - name: checkout depot_tools
         run: |
-          # git clone -v --depth 1 ${DEPOT_TOOLS_REPOSITORY}
-          git clone -v ${DEPOT_TOOLS_REPOSITORY}
+          git clone -v ${DEPOT_TOOLS_REPOSITORY} depot_tools
           echo "$(pwd)/depot_tools" >> $GITHUB_PATH
 
       - name: show build debug info
@@ -67,14 +66,20 @@ jobs:
           ls -la
           echo "Files in depot_tools"
           ls -la depot_tools
+          echo "prepare.revision: ${{ needs.prepare.outputs.revision }}"
 
       - name: build
         run: |
           gclient config --name src --unmanaged ${WEBRTC_REPOSITORY}
-          echo "target_os = ${{ matrix.gclient_os }}" >> .gclient
+          echo "target_os = ${{ matrix.target_os }}" >> .gclient
+          echo "content of .gclient:"
+          cat .gclient
           # gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ needs.prepare.outputs.revision }}
+          echo "start gclient sync"
           gclient sync --no_bootstrap --shallow --no-history -vv --revision d75b9e9ff07ee42841b4e416629c9fbd4b058905
+          echo "start gn gen"
           gn gen out --args="${{ matrix.gnargs }}"
+          echo "start ninja"
           ninja -v -C out
 
       - name: Upload artifacts

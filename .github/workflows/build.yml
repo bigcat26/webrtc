@@ -1,25 +1,75 @@
 name: ci-workflow
 on: [push]
 
+env:
+  WEBRTC_RELEASE: M112
+  WEBRTC_BRANCH_HEAD: branch-heads/5615
+  WEBRTC_REPOSITORY: https://chromium.googlesource.com/external/webrtc/
+
 jobs:
-  build:
+  prepare:
     runs-on: ubuntu-latest
+    outputs:
+      revision: ${{ steps.prepare.outputs.revision }}
     steps:
+      - name: Get webrtc release commit id
+        run: |
+          GIT_COMMIT=$(git ls-remote ${WEBRTC_REPOSITORY} --heads ${WEBRTC_BRANCH_HEAD} |cut -c -40)
+          echo "WebRTC release:     ${WEBRTC_RELEASE}"
+          echo "WebRTC branch head: ${WEBRTC_BRANCH_HEAD}"
+          echo "WebRTC repository:  ${WEBRTC_REPOSITORY}"
+          echo "WebRTC git commit:  ${GIT_COMMIT}"
+
+          echo "::set-output name=revision::${GIT_COMMIT}"
+
+  build:
+    needs: prepare
+    strategy:
+      matrix:
+        include:
+          - target_os: linux
+            arch: x64
+            gnargs: strip_debug_info=true enable_stripping=true enable_iterator_debugging=false enable_profiling=false is_clang=false is_debug=false libyuv_use_neon=false rtc_enable_protobuf=false rtc_build_with_neon=false rtc_include_internal_audio_device=false rtc_include_pulse_audio=false rtc_libvpx_build_vp9=false rtc_use_gtk=false treat_warnings_as_errors=false use_aura=false use_custom_libcxx=false use_dbus=false use_gold=true use_goma=false use_lld=false use_ozone=false use_udev=false rtc_build_examples=false rtc_build_tools=false rtc_include_tests=false use_glib=false rtc_use_x11=false use_x11=false rtc_use_pipewire=false enable_paint_preview=false libyuv_disable_jpeg=true libyuv_include_tests=false libyuv_use_gflags=false enable_libaom=false rtc_enable_libevent=false rtc_build_libevent=false rtc_exclude_audio_processing_module=true rtc_include_builtin_audio_codecs=false rtc_include_builtin_video_codecs=false libyuv_use_neon=false rtc_enable_avx2=false rtc_enable_sctp=true rtc_use_h264=false rtc_build_libsrtp=true rtc_build_libvpx=false rtc_build_opus=false rtc_include_ilbc=false rtc_include_opus=false rtc_enable_protobuf=false toolkit_views=false
+            gclient_os: '["linux"]'
+            runs_on: ubuntu-22.04
+            desc: pure datachannel
+
+    runs-on: ${{ matrix.runs_on }}
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 512
+          swap-size-mb: 1024
+          remove-dotnet: true
+          remove-codeql: true
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+
       - uses: actions/checkout@v3
         with:
           submodules: recursive
 
-      - name: add depot tools to path
-        run: echo "$(pwd)/depot_tools" >> $GITHUB_PATH
+      - name: show build debug info
+        run: |
+          echo "Build environment variables:"
+          export
+          echo "Free disk space:"
+          df -h
 
-      - name: debug
-        run: pwd && ls -l && export && ls -l depot_tools
+      - name: build
+        run: |
+          echo "$(pwd)/depot_tools" >> $GITHUB_PATH
+          gclient config --name src --unmanaged https://webrtc.googlesource.com/src.git
+          echo "target_os = ${{ matrix.gclient_os }}" >> .gclient
+          gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ needs.prepare.outputs.revision }}
+          gn gen out --args="${{ matrix.gnargs }}"
+          ninja -v -C out
 
-      - name: check out webrtc
-        run: gclient config --name src --unmanaged https://webrtc.googlesource.com/src.git
-
-      - name: set target os
-        run: echo "target_os = [ 'linux', 'android' ]" >> .gclient
-
-      - name: sync code
-        run: gclient sync --with_branch_heads --with_tags --reset --verbose --no-history --delete_unversioned_trees
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: webrtc
+          path: out/src/out/libwebrtc.a
+          retention-days: 5

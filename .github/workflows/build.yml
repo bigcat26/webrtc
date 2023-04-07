@@ -5,6 +5,7 @@ env:
   WEBRTC_RELEASE: M112
   WEBRTC_BRANCH_HEAD: branch-heads/5615
   WEBRTC_REPOSITORY: https://chromium.googlesource.com/external/webrtc/
+  DEPOT_TOOLS_REPOSITORY: https://chromium.googlesource.com/chromium/tools/depot_tools
 
 jobs:
   prepare:
@@ -48,8 +49,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: prepend depot tools to path
+      - name: checkout depot_tools
         run: |
+          # git clone -v --depth 1 ${DEPOT_TOOLS_REPOSITORY}
+          git clone -v ${DEPOT_TOOLS_REPOSITORY}
           echo "$(pwd)/depot_tools" >> $GITHUB_PATH
 
       - name: show build debug info
@@ -67,9 +70,10 @@ jobs:
 
       - name: build
         run: |
-          gclient config --name src --unmanaged https://webrtc.googlesource.com/src.git
+          gclient config --name src --unmanaged ${WEBRTC_REPOSITORY}
           echo "target_os = ${{ matrix.gclient_os }}" >> .gclient
-          gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ needs.prepare.outputs.revision }}
+          # gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ needs.prepare.outputs.revision }}
+          gclient sync --no_bootstrap --shallow --no-history -vv --revision d75b9e9ff07ee42841b4e416629c9fbd4b058905
           gn gen out --args="${{ matrix.gnargs }}"
           ninja -v -C out
 

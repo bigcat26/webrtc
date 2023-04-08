@@ -78,6 +78,7 @@ jobs:
           echo "start gclient sync"
           gclient sync --no_bootstrap --shallow --no-history -vv --revision d75b9e9ff07ee42841b4e416629c9fbd4b058905
           echo "start gn gen"
+          cd src
           gn gen out --args="${{ matrix.gnargs }}"
           echo "Files in current work directory"
           ls -la

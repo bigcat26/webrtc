@@ -21,7 +21,7 @@ jobs:
           echo "WebRTC repository:  ${WEBRTC_REPOSITORY}"
           echo "WebRTC git commit:  ${GIT_COMMIT}"
 
-          echo "::set-output name=revision::${GIT_COMMIT}"
+          echo "revision=${GIT_COMMIT}" >> $GITHUB_OUTPUT
 
   build:
     needs: prepare
@@ -91,5 +91,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: webrtc
-          path: out/src/out/libwebrtc.a
+          path: src/out/obj/libwebrtc.a
           retention-days: 5

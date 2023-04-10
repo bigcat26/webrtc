@@ -76,31 +76,26 @@ jobs:
           #   runs_on: ubuntu-22.04
           #   desc: pure datachannel
 
-          # - os: android
-          #   arch: arm
-          #   gnargs: >-
-          #     use_custom_libcxx=false
-          #     use_glib=false
-          #     rtc_use_x11=false
-          #     use_x11=false
-          #   target_os: '["linux", "android"]'
-          #   runs_on: ubuntu-22.04
-
           - os: android
-            arch: arm
+            cpu: arm
             gnargs: >-
               use_custom_libcxx=false
-              use_glib=false
-              rtc_use_x11=false
-              use_x11=false
             target_os: '["linux", "android"]'
             runs_on: ubuntu-22.04
+
+          # - os: android
+          #   cpu: arm64
+          #   gnargs: >-
+          #     use_custom_libcxx=false
+          #   target_os: '["linux", "android"]'
+          #   runs_on: ubuntu-22.04
 
     runs-on: ${{ matrix.runs_on }}
 
     env:
       GNARGS_COMMON: >-
         target_os="${{ matrix.os }}"
+        target_cpu="${{ matrix.cpu }}"
         is_debug=false
         strip_debug_info=true
         enable_stripping=true
@@ -112,7 +107,7 @@ jobs:
         rtc_build_examples=false
         libyuv_include_tests=false
         treat_warnings_as_errors=false
-      OUTPUT_NAME: WebRTC-${WEBRTC_RELEASE}-${{ matrix.os }}-${{ matrix.arch }}
+      OUTPUT_NAME: WebRTC-${WEBRTC_RELEASE}-${{ matrix.os }}-${{ matrix.cpu }}
 
     steps:
       # - name: Maximize build space
@@ -142,7 +137,7 @@ jobs:
           # ls -la
           # echo "Files in depot_tools"
           # ls -la depot_tools
-          echo "prepare.revision: ${{ needs.prepare.steps.fetch-revision.outputs.revision }}"
+          echo "prepare.revision: ${{ needs.prepare.outputs.revision }}"
 
       - name: build
         run: |

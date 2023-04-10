@@ -98,7 +98,7 @@ jobs:
 
     env:
       GNARGS_COMMON: >
-        target_os=\"${{ matrix.os }}\"
+        target_os='${{ matrix.os }}'
         is_debug=false
         strip_debug_info=true
         enable_stripping=true
@@ -136,16 +136,15 @@ jobs:
           export
           echo "Free disk space:"
           df -h
-          echo "Current work directory"
-          pwd
           # echo "Files in current work directory"
           # ls -la
           # echo "Files in depot_tools"
           # ls -la depot_tools
-          echo "prepare.revision: ${{ steps.fetch-revision.outputs.revision }}"
+          echo "prepare.revision: ${{ jobs.prepare.steps.fetch-revision.outputs.revision }}"
 
       - name: build
         run: |
+          set -x
           gclient config --name src --unmanaged ${WEBRTC_REPOSITORY}
           echo 'target_os = ${{ matrix.target_os }}' >> .gclient
           # echo "content of .gclient:"
@@ -164,9 +163,26 @@ jobs:
           echo "start ninja"
           ninja -v -C out
 
+      - name: build for iphoneos
+        if: ${{ matrix.target_os == 'iphoneos' }}
+        run: echo ok
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: ${OUTPUT_NAME}
           path: src/out/obj/libwebrtc.a
           retention-days: 5
+
+  build:
+    steps:
+      - name: draft a release
+        if: github.ref == 'refs/heads/master'
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: true
+          prerelease: true
+          release_name: WebRTC-${WEBRTC_RELEASE}
+          # tag_name: ${{ github.ref }}
+  #        body_path: CHANGELOG.md

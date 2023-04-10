@@ -72,6 +72,7 @@ jobs:
           #     rtc_include_opus=false
           #     rtc_enable_protobuf=false
           #     toolkit_views=false
+          #     libyuv_include_tests=false
           #   target_os: '["linux"]'
           #   runs_on: ubuntu-22.04
           #   desc: pure datachannel
@@ -80,6 +81,8 @@ jobs:
             cpu: arm
             gnargs: >-
               use_custom_libcxx=false
+              is_component_ffmpeg=true
+              proprietary_codecs=true
             target_os: '["linux", "android"]'
             runs_on: ubuntu-22.04
 
@@ -93,10 +96,14 @@ jobs:
     runs-on: ${{ matrix.runs_on }}
 
     env:
-      GNARGS_COMMON: >-
+      GNARGS: >-
         target_os="${{ matrix.os }}"
         target_cpu="${{ matrix.cpu }}"
+        ffmpeg_branding="Chrome"
+        symbol_level=0
         is_debug=false
+        is_clang=false
+        is_component_build=false
         strip_debug_info=true
         enable_stripping=true
         enable_iterator_debugging=false
@@ -105,8 +112,8 @@ jobs:
         rtc_include_tests=false
         rtc_build_tools=false
         rtc_build_examples=false
-        libyuv_include_tests=false
         treat_warnings_as_errors=false
+        ${{ matrix.gnargs }}
       OUTPUT_NAME: WebRTC-${WEBRTC_RELEASE}-${{ matrix.os }}-${{ matrix.cpu }}
 
     steps:
@@ -129,27 +136,21 @@ jobs:
 
       - name: show build debug info
         run: |
-          echo "Build environment variables:"
-          export
           echo "Free disk space:"
           df -h
-          # echo "Files in current work directory"
-          # ls -la
-          # echo "Files in depot_tools"
-          # ls -la depot_tools
-          echo "prepare.revision: ${{ needs.prepare.outputs.revision }}"
+          echo "Build environment variables:"
+          export
 
       - name: build
         run: |
           set -x
           gclient config --name src --unmanaged ${WEBRTC_REPOSITORY}
           echo 'target_os = ${{ matrix.target_os }}' >> .gclient
-          # gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ needs.prepare.outputs.revision }}
           echo "start gclient sync"
-          gclient sync --no_bootstrap --shallow --no-history -vv --revision d75b9e9ff07ee42841b4e416629c9fbd4b058905
+          gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ needs.prepare.outputs.revision }}
           echo "start gn gen"
           cd src
-          gn gen out --args="${GNARGS_COMMON} ${{ matrix.gnargs }}"
+          gn gen out --args="${GNARGS}"
           echo "Files in out directory"
           ls -la out
           echo "start ninja"

@@ -29,7 +29,7 @@ jobs:
         include:
           # - os: linux
           #   arch: x64
-          #   gnargs: >
+          #   gnargs: >-
           #     is_clang=false
           #     libyuv_use_neon=false
           #     rtc_enable_protobuf=false
@@ -76,7 +76,7 @@ jobs:
 
           # - os: android
           #   arch: arm
-          #   gnargs: >
+          #   gnargs: >-
           #     use_custom_libcxx=false
           #     use_glib=false
           #     rtc_use_x11=false
@@ -97,7 +97,7 @@ jobs:
     runs-on: ${{ matrix.runs_on }}
 
     env:
-      GNARGS_COMMON: >
+      GNARGS_COMMON: >-
         target_os='${{ matrix.os }}'
         is_debug=false
         strip_debug_info=true

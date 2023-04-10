@@ -27,22 +27,70 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: linux
-            arch: x64
-            gnargs: is_clang=false libyuv_use_neon=false rtc_enable_protobuf=false rtc_build_with_neon=false rtc_include_internal_audio_device=false rtc_include_pulse_audio=false rtc_libvpx_build_vp9=false rtc_use_gtk=false use_aura=false use_custom_libcxx=false use_dbus=false use_gold=true use_goma=false use_lld=false use_ozone=false use_udev=false use_glib=false rtc_use_x11=false use_x11=false rtc_use_pipewire=false enable_paint_preview=false libyuv_disable_jpeg=true libyuv_use_gflags=false enable_libaom=false rtc_enable_libevent=false rtc_build_libevent=false rtc_exclude_audio_processing_module=true rtc_include_builtin_audio_codecs=false rtc_include_builtin_video_codecs=false libyuv_use_neon=false rtc_enable_avx2=false rtc_enable_sctp=true rtc_use_h264=false rtc_build_libsrtp=true rtc_build_libvpx=false rtc_build_opus=false rtc_include_ilbc=false rtc_include_opus=false rtc_enable_protobuf=false toolkit_views=false
-            target_os: '["linux"]'
-            runs_on: ubuntu-22.04
-            desc: pure datachannel
+          # - os: linux
+          #   arch: x64
+          #   gnargs: >
+          #     is_clang=false
+          #     libyuv_use_neon=false
+          #     rtc_enable_protobuf=false
+          #     rtc_build_with_neon=false
+          #     rtc_include_internal_audio_device=false
+          #     rtc_include_pulse_audio=false
+          #     rtc_libvpx_build_vp9=false
+          #     rtc_use_gtk=false
+          #     use_aura=false
+          #     use_custom_libcxx=false
+          #     use_dbus=false
+          #     use_gold=true
+          #     use_goma=false
+          #     use_lld=false
+          #     use_ozone=false
+          #     use_udev=false
+          #     use_glib=false
+          #     rtc_use_x11=false
+          #     use_x11=false
+          #     rtc_use_pipewire=false
+          #     enable_paint_preview=false
+          #     libyuv_disable_jpeg=true
+          #     libyuv_use_gflags=false
+          #     enable_libaom=false
+          #     rtc_enable_libevent=false
+          #     rtc_build_libevent=false
+          #     rtc_exclude_audio_processing_module=true
+          #     rtc_include_builtin_audio_codecs=false
+          #     rtc_include_builtin_video_codecs=false
+          #     libyuv_use_neon=false
+          #     rtc_enable_avx2=false
+          #     rtc_enable_sctp=true
+          #     rtc_use_h264=false
+          #     rtc_build_libsrtp=true
+          #     rtc_build_libvpx=false
+          #     rtc_build_opus=false
+          #     rtc_include_ilbc=false
+          #     rtc_include_opus=false
+          #     rtc_enable_protobuf=false
+          #     toolkit_views=false
+          #   target_os: '["linux"]'
+          #   runs_on: ubuntu-22.04
+          #   desc: pure datachannel
+
+          # - os: android
+          #   arch: arm
+          #   gnargs: >
+          #     use_custom_libcxx=false
+          #     use_glib=false
+          #     rtc_use_x11=false
+          #     use_x11=false
+          #   target_os: '["linux", "android"]'
+          #   runs_on: ubuntu-22.04
 
           - os: android
             arch: arm
-            gnargs: use_custom_libcxx=false use_glib=false rtc_use_x11=false use_x11=false
-            target_os: '["linux", "android"]'
-            runs_on: ubuntu-22.04
-
-          - os: android
-            arch: arm
-            gnargs: use_custom_libcxx=false use_glib=false rtc_use_x11=false use_x11=false
+            gnargs: >
+              use_custom_libcxx=false
+              use_glib=false
+              rtc_use_x11=false
+              use_x11=false
             target_os: '["linux", "android"]'
             runs_on: ubuntu-22.04
 
@@ -107,8 +155,8 @@ jobs:
           gclient sync --no_bootstrap --shallow --no-history -vv --revision d75b9e9ff07ee42841b4e416629c9fbd4b058905
           echo "start gn gen"
           cd src
-          echo gn gen out --args='${GNARGS_COMMON} ${{ matrix.gnargs }}'
-          gn gen out --args='${GNARGS_COMMON} ${{ matrix.gnargs }}'
+          echo gn gen out --args=\"${GNARGS_COMMON} ${{ matrix.gnargs }}\"
+          gn gen out --args="${GNARGS_COMMON} ${{ matrix.gnargs }}"
           echo "Files in current work directory"
           ls -la
           echo "Files in out directory"

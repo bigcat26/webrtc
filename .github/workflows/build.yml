@@ -10,6 +10,8 @@ env:
 jobs:
   prepare:
     runs-on: ubuntu-latest
+    outputs:
+      revision: ${{ steps.fetch-revision.outputs.revision }}
     steps:
       - id: fetch-revision
         name: Get WebRTC release revision
@@ -98,7 +100,7 @@ jobs:
 
     env:
       GNARGS_COMMON: >-
-        target_os='${{ matrix.os }}'
+        target_os=\"${{ matrix.os }}\"
         is_debug=false
         strip_debug_info=true
         enable_stripping=true
@@ -174,6 +176,7 @@ jobs:
           retention-days: 5
 
   release:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: draft a release

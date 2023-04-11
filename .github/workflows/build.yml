@@ -198,6 +198,7 @@ jobs:
       - name: compile webrtc
         run: |
           set -x
+          cd ${GITHUB_WORKSPACE}/src
           ninja -v -C out
 
       # - name: archive artifacts

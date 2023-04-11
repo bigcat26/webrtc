@@ -79,16 +79,16 @@ jobs:
             target_os: '["linux"]'
             runs_on: ubuntu-22.04
 
-          # - os: android
-          #   cpu: arm
-          #   gnargs: >-
-          #     is_component_ffmpeg=true
-          #     proprietary_codecs=true
-          #   target_os: '["linux", "android"]'
-          #   runs_on: ubuntu-22.04
-          #   artifacts: >-
-          #     out/lib.java/sdk/android
-          #     out/libjingle_peerconnection_so.so
+          - os: android
+            cpu: arm
+            gnargs: >-
+              is_component_ffmpeg=true
+              proprietary_codecs=true
+            target_os: '["linux", "android"]'
+            runs_on: ubuntu-22.04
+            artifacts: >-
+              out/lib.java/sdk/android
+              out/libjingle_peerconnection_so.so
 
           - os: android
             cpu: arm64
@@ -104,6 +104,7 @@ jobs:
     runs-on: ${{ matrix.runs_on }}
 
     env:
+      OUTPUT_NAME: WebRTC${{ matrix.tag }}-${WEBRTC_RELEASE}-${{ matrix.os }}-${{ matrix.cpu }}
       GNARGS: >-
         target_os="${{ matrix.os }}"
         target_cpu="${{ matrix.cpu }}"
@@ -122,27 +123,26 @@ jobs:
         treat_warnings_as_errors=false
         ${{ matrix.gnargs }}
       HEADER_EXCLUDES: >-
-        ./out/*
-        ./ios/*
-        ./sdk/*
-        ./examples/*
-        ./test/*
-        ./build/*
-        ./buildtools/*
-        ./third_party/blink/*
-        ./third_party/llvm-build/*
-        ./third_party/win_build_output/*
-        ./third_party/android_ndk/*
-        ./third_party/catapult/*
-        ./third_party/googletest/*
-        ./third_party/android_deps/*
-        ./third_party/android_sdk/*
-        ./third_party/crashpad/*
-        ./third_party/perfetto/*
-        ./third_party/hunspell/*
-        ./third_party/icu/*
-        ./third_party/khronos/*
-      OUTPUT_NAME: WebRTC${{ matrix.tag }}-${WEBRTC_RELEASE}-${{ matrix.os }}-${{ matrix.cpu }}
+        out
+        ios
+        sdk
+        examples
+        test
+        build
+        buildtools
+        third_party/blink
+        third_party/llvm-build
+        third_party/win_build_output
+        third_party/android_ndk
+        third_party/catapult
+        third_party/googletest
+        third_party/android_deps
+        third_party/android_sdk
+        third_party/crashpad
+        third_party/perfetto
+        third_party/hunspell
+        third_party/icu
+        third_party/khronos
 
     steps:
       # - name: Maximize build space
@@ -157,19 +157,19 @@ jobs:
         with:
           submodules: recursive
 
-      - name: checkout depot_tools
+      - name: Checkout depot_tools
         run: |
           git clone -v ${DEPOT_TOOLS_REPOSITORY} depot_tools
           echo "$(pwd)/depot_tools" >> $GITHUB_PATH
 
-      - name: show build debug info
+      - name: Show build environments
         run: |
           echo "Free disk space:"
           df -h
           echo "Build environment variables:"
           export
 
-      - name: checkout webrtc
+      - name: Checkout WebRTC
         run: |
           set -x
           gclient config --name src --unmanaged ${WEBRTC_REPOSITORY}
@@ -177,47 +177,49 @@ jobs:
           gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ needs.prepare.outputs.revision }}
           echo "${{ matrix.headers }}"
 
-      - name: pack headers
-        if: ${{ matrix.headers == true }}
-        run: |
-          set -x
-          echo "${{ matrix.headers }}"
-          cd ${GITHUB_WORKSPACE}/src
-          for excluded in ${HEADER_EXCLUDES}; do
-            FIND_ARGS="$FIND_ARGS ! -path \'$excluded\'"
-          done
-          find . -type f -name '*.h' ${FIND_ARGS} -exec tar rvf webrtc-headers.tar {} \;
-
-      - name: configure webrtc
+      - name: Configure WebRTC
         run: |
           set -x
           cd ${GITHUB_WORKSPACE}/src
           gn gen out --args="${GNARGS}"
 
-      - name: compile webrtc
+      - name: Compile WebRTC
         run: |
           set -x
           cd ${GITHUB_WORKSPACE}/src
           ninja -v -C out
 
-      # - name: archive artifacts
-      #   run: |
-      #     set -x
-      #     cd ${GITHUB_WORKSPACE}/src
-      #     for excluded in ${HEADER_EXCLUDES}; do
-      #       FIND_ARGS = "$FIND_ARGS ! -path \"$excluded\""
-      #     done
-      #     find . -type f -name "*.h" ${FIND_ARGS} -exec tar rvf webrtc-headers.tar {} \;
+      - name: Archive WebRTC header files
+        if: ${{ matrix.headers == true }}
+        run: |
+          set -x
+
+          cd ${GITHUB_WORKSPACE}/src
+          for excluded in ${HEADER_EXCLUDES}; do
+            FIND_ARGS="$FIND_ARGS -path $excluded -prune -o"
+          done
+          find . -type f -name '*.h' ${FIND_ARGS} -print -exec tar rf webrtc-headers.tar {} \;
+
+      - name: Archive artifacts
+        run: |
+          set -x
+          cd ${GITHUB_WORKSPACE}/src
+
+          for included in ${{ matrix.artifacts }}; do
+            tar rf ${OUTPUT_NAME}.tar ${included}
+          done
+
+          bzip2 ${OUTPUT_NAME}.tar
 
       # - name: build for iphoneos
       #   if: ${{ matrix.target_os == 'iphoneos' }}
       #   run: echo ok
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          name: ${OUTPUT_NAME}
-          path: src/out/obj/libwebrtc.a
+          name: ${{ env.OUTPUT_NAME }}
+          path: ${{ env.GITHUB_WORKSPACE }}/src/${{ env.OUTPUT_NAME }}.tar.bz2
           retention-days: 5
 
   release:

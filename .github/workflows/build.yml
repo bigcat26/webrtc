@@ -110,7 +110,6 @@ jobs:
         ffmpeg_branding="Chrome"
         symbol_level=0
         is_debug=false
-        is_clang=false
         is_component_build=false
         strip_debug_info=true
         enable_stripping=true
@@ -185,9 +184,9 @@ jobs:
           echo "${{ matrix.headers }}"
           cd ${GITHUB_WORKSPACE}/src
           for excluded in ${HEADER_EXCLUDES}; do
-            FIND_ARGS="$FIND_ARGS ! -path \"$excluded\""
+            FIND_ARGS="$FIND_ARGS ! -path \'$excluded\'"
           done
-          find . -type f -name "*.h" ${FIND_ARGS} -exec tar rvf webrtc-headers.tar {} \;
+          find . -type f -name '*.h' ${FIND_ARGS} -exec tar rvf webrtc-headers.tar {} \;
 
       - name: configure webrtc
         run: |

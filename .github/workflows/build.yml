@@ -152,7 +152,7 @@ jobs:
     runs-on: ${{ matrix.runs_on }}
 
     env:
-      OUTPUT_NAME: WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}
+      OUTPUT_NAME: WebRTC${{ matrix.tag }}-M112-${{ matrix.os }}-${{ matrix.cpu }}
       GNARGS: >-
         target_os="${{ matrix.os }}"
         target_cpu="${{ matrix.cpu }}"
@@ -249,7 +249,7 @@ jobs:
           find . -type f -name '*.h' ${FIND_ARGS} -print -exec tar rf webrtc-headers.tar {} \;
 
       - name: Show iOS artifacts
-        if: ${{ matrix.os == "ios" }}
+        if: ${{ matrix.os == ios }}
         run: |
           ls -laR ${GITHUB_WORKSPACE}/src/out/
 

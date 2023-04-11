@@ -249,7 +249,7 @@ jobs:
           find . -type f -name '*.h' ${FIND_ARGS} -print -exec tar rf webrtc-headers.tar {} \;
 
       - name: Show iOS artifacts
-        if: ${{ matrix.os == ios }}
+        if: ${{ matrix.os == 'ios' }}
         run: |
           ls -laR ${GITHUB_WORKSPACE}/src/out/
 

@@ -124,7 +124,7 @@ jobs:
           #     out/libjingle_peerconnection_so.so
 
           - os: ios
-            cpu: arm
+            cpu: arm64
             headers: true
             gnargs: >-
               proprietary_codecs=true

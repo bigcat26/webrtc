@@ -244,7 +244,8 @@ jobs:
           for excluded in ${HEADER_EXCLUDES}; do
             FIND_ARGS="$FIND_ARGS -path ./$excluded -prune -o"
           done
-          find . -type f -name '*.h' ${FIND_ARGS} -print -exec tar rf webrtc-headers.tar {} \;
+          find . ${FIND_ARGS} -type f -a \( -name '*.h' -o -name LICENSE -o -name COPYING \) -print -exec tar rf ${OUTPUT_NAME}.tar {} \;
+          echo 'done'
 
       - name: Show iOS artifacts
         if: ${{ matrix.os == 'ios' }}
@@ -270,7 +271,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.OUTPUT_NAME }}
-          path: ${{ env.GITHUB_WORKSPACE }}/src/${{ env.OUTPUT_NAME }}.tar.bz2
+          path: src/${{ env.OUTPUT_NAME }}.tar.bz2
           retention-days: 5
 
   release:

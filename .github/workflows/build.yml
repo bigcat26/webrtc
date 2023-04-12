@@ -101,16 +101,16 @@ jobs:
           #     out/lib.java/sdk/android
           #     out/libjingle_peerconnection_so.so
 
-          - os: android
-            cpu: x86
-            gnargs: >-
-              is_component_ffmpeg=true
-              proprietary_codecs=true
-            target_os: '["linux", "android"]'
-            runs_on: ubuntu-22.04
-            artifacts: >-
-              out/lib.java/sdk/android
-              out/libjingle_peerconnection_so.so
+          # - os: android
+          #   cpu: x86
+          #   gnargs: >-
+          #     is_component_ffmpeg=true
+          #     proprietary_codecs=true
+          #   target_os: '["linux", "android"]'
+          #   runs_on: ubuntu-22.04
+          #   artifacts: >-
+          #     out/lib.java/sdk/android
+          #     out/libjingle_peerconnection_so.so
 
           # - os: android
           #   cpu: x64
@@ -128,7 +128,6 @@ jobs:
             headers: true
             gnargs: >-
               proprietary_codecs=true
-              use_custom_libcxx=false
               ios_enable_code_signing=false
             target_os: '["ios", "mac"]'
             runs_on: macos-latest
@@ -141,7 +140,6 @@ jobs:
             headers: true
             gnargs: >-
               proprietary_codecs=true
-              use_custom_libcxx=false
               ios_enable_code_signing=false
             target_os: '["ios", "mac"]'
             runs_on: macos-latest

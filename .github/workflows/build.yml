@@ -79,49 +79,49 @@ jobs:
             target_os: '["linux"]'
             runs_on: ubuntu-22.04
 
-          # - os: android
-          #   cpu: arm
-          #   gnargs: >-
-          #     is_component_ffmpeg=true
-          #     proprietary_codecs=true
-          #   target_os: '["linux", "android"]'
-          #   runs_on: ubuntu-22.04
-          #   artifacts: >-
-          #     out/lib.java/sdk/android
-          #     out/libjingle_peerconnection_so.so
+          - os: android
+            cpu: arm
+            gnargs: >-
+              is_component_ffmpeg=true
+              proprietary_codecs=true
+            target_os: '["linux", "android"]'
+            runs_on: ubuntu-22.04
+            artifacts: >-
+              out/lib.java/sdk/android
+              out/libjingle_peerconnection_so.so
 
-          # - os: android
-          #   cpu: arm64
-          #   gnargs: >-
-          #     is_component_ffmpeg=true
-          #     proprietary_codecs=true
-          #   target_os: '["linux", "android"]'
-          #   runs_on: ubuntu-22.04
-          #   artifacts: >-
-          #     out/lib.java/sdk/android
-          #     out/libjingle_peerconnection_so.so
+          - os: android
+            cpu: arm64
+            gnargs: >-
+              is_component_ffmpeg=true
+              proprietary_codecs=true
+            target_os: '["linux", "android"]'
+            runs_on: ubuntu-22.04
+            artifacts: >-
+              out/lib.java/sdk/android
+              out/libjingle_peerconnection_so.so
 
-          # - os: android
-          #   cpu: x86
-          #   gnargs: >-
-          #     is_component_ffmpeg=true
-          #     proprietary_codecs=true
-          #   target_os: '["linux", "android"]'
-          #   runs_on: ubuntu-22.04
-          #   artifacts: >-
-          #     out/lib.java/sdk/android
-          #     out/libjingle_peerconnection_so.so
+          - os: android
+            cpu: x86
+            gnargs: >-
+              is_component_ffmpeg=true
+              proprietary_codecs=true
+            target_os: '["linux", "android"]'
+            runs_on: ubuntu-22.04
+            artifacts: >-
+              out/lib.java/sdk/android
+              out/libjingle_peerconnection_so.so
 
-          # - os: android
-          #   cpu: x64
-          #   gnargs: >-
-          #     is_component_ffmpeg=true
-          #     proprietary_codecs=true
-          #   target_os: '["linux", "android"]'
-          #   runs_on: ubuntu-22.04
-          #   artifacts: >-
-          #     out/lib.java/sdk/android
-          #     out/libjingle_peerconnection_so.so
+          - os: android
+            cpu: x64
+            gnargs: >-
+              is_component_ffmpeg=true
+              proprietary_codecs=true
+            target_os: '["linux", "android"]'
+            runs_on: ubuntu-22.04
+            artifacts: >-
+              out/lib.java/sdk/android
+              out/libjingle_peerconnection_so.so
 
           - os: ios
             cpu: arm64
@@ -242,7 +242,7 @@ jobs:
 
           cd ${GITHUB_WORKSPACE}/src
           for excluded in ${HEADER_EXCLUDES}; do
-            FIND_ARGS="$FIND_ARGS -path $excluded -prune -o"
+            FIND_ARGS="$FIND_ARGS -path ./$excluded -prune -o"
           done
           find . -type f -name '*.h' ${FIND_ARGS} -print -exec tar rf webrtc-headers.tar {} \;
 

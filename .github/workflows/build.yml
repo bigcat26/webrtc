@@ -286,15 +286,6 @@ jobs:
             # src/${{ env.OUTPUT_NAME }}.tar.bz2
           retention-days: 5
 
-  post_build:
-    needs: build
-    strategy:
-      # max-parallel: 2
-      matrix:
-        include:
-          # - os: linux
-
-
   release:
     needs: build
     runs-on: ubuntu-latest

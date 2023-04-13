@@ -36,7 +36,6 @@ jobs:
           - os: linux
             cpu: x64
             tag: -DataChannel
-            headers: true
             gnargs: >-
               is_clang=false
               libyuv_use_neon=false
@@ -81,49 +80,41 @@ jobs:
               libyuv_include_tests=false
             target_os: '["linux"]'
             runs_on: ubuntu-22.04
-            artifacts: out/obj/libwebrtc.a
 
-          # - os: android
-          #   cpu: arm
-          #   gnargs: is_component_ffmpeg=true proprietary_codecs=true
-          #   target_os: '["linux", "android"]'
-          #   runs_on: ubuntu-22.04
-          #   artifacts: out/lib.java/sdk/android/libwebrtc.jar out/libjingle_peerconnection_so.so
-          # - os: android
-          #   cpu: arm64
-          #   gnargs: is_component_ffmpeg=true proprietary_codecs=true
-          #   target_os: '["linux", "android"]'
-          #   runs_on: ubuntu-22.04
-          #   artifacts: out/lib.java/sdk/android/libwebrtc.jar out/libjingle_peerconnection_so.so
+          - os: android
+            cpu: arm
+            gnargs: is_component_ffmpeg=true proprietary_codecs=true
+            target_os: '["linux", "android"]'
+            runs_on: ubuntu-22.04
+          - os: android
+            cpu: arm64
+            gnargs: is_component_ffmpeg=true proprietary_codecs=true
+            target_os: '["linux", "android"]'
+            runs_on: ubuntu-22.04
+          - os: android
+            cpu: x86
+            gnargs: is_component_ffmpeg=true proprietary_codecs=true
+            target_os: '["linux", "android"]'
+            runs_on: ubuntu-22.04
+          - os: android
+            cpu: x64
+            gnargs: is_component_ffmpeg=true proprietary_codecs=true
+            target_os: '["linux", "android"]'
+            runs_on: ubuntu-22.04
 
-          # - os: android
-          #   cpu: x86
-          #   gnargs: is_component_ffmpeg=true proprietary_codecs=true
-          #   target_os: '["linux", "android"]'
-          #   runs_on: ubuntu-22.04
-          #   artifacts: out/lib.java/sdk/android/libwebrtc.jar out/libjingle_peerconnection_so.so
-          # - os: android
-          #   cpu: x64
-          #   gnargs: is_component_ffmpeg=true proprietary_codecs=true
-          #   target_os: '["linux", "android"]'
-          #   runs_on: ubuntu-22.04
-          #   artifacts: out/lib.java/sdk/android/libwebrtc.jar out/libjingle_peerconnection_so.so
+          - os: ios
+            cpu: arm64
+            headers: true
+            gnargs: proprietary_codecs=true ios_enable_code_signing=false
+            target_os: '["ios", "mac"]'
+            runs_on: macos-latest
 
-          # - os: ios
-          #   cpu: arm64
-          #   headers: true
-          #   gnargs: proprietary_codecs=true ios_enable_code_signing=false
-          #   target_os: '["ios", "mac"]'
-          #   runs_on: macos-latest
-          #   artifacts: out/WebRTC.framework out/obj/libwebrtc.a
-
-          # - os: mac
-          #   cpu: x64
-          #   headers: true
-          #   gnargs: proprietary_codecs=true ios_enable_code_signing=false
-          #   target_os: '["ios", "mac"]'
-          #   runs_on: macos-latest
-          #   artifacts: out/WebRTC.framework out/obj/libwebrtc.a
+          - os: mac
+            cpu: x64
+            headers: true
+            gnargs: proprietary_codecs=true ios_enable_code_signing=false
+            target_os: '["ios", "mac"]'
+            runs_on: macos-latest
 
     runs-on: ${{ matrix.runs_on }}
 
@@ -146,27 +137,6 @@ jobs:
         rtc_build_examples=false
         treat_warnings_as_errors=false
         ${{ matrix.gnargs }}
-      # HEADER_EXCLUDES: >-
-      #   out
-      #   ios
-      #   sdk
-      #   examples
-      #   test
-      #   build
-      #   buildtools
-      #   third_party/blink
-      #   third_party/llvm-build
-      #   third_party/win_build_output
-      #   third_party/android_ndk
-      #   third_party/catapult
-      #   third_party/googletest
-      #   third_party/android_deps
-      #   third_party/android_sdk
-      #   third_party/crashpad
-      #   third_party/perfetto
-      #   third_party/hunspell
-      #   third_party/icu
-      #   third_party/khronos
 
     steps:
       # - name: Maximize build space
@@ -199,66 +169,56 @@ jobs:
           gclient config --name src --unmanaged ${WEBRTC_REPOSITORY}
           echo 'target_os = ${{ matrix.target_os }}' >> .gclient
           gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ needs.pre_build.outputs.revision }}
-          echo "${{ matrix.headers }}"
 
-      # - name: Configure WebRTC
-      #   run: |
-      #     set -x
-      #     cd ${GITHUB_WORKSPACE}/src
-      #     gn gen out --args="${GNARGS}"
+      - name: Configure WebRTC
+        run: |
+          set -x
+          cd ${GITHUB_WORKSPACE}/src
+          gn gen out --args="${GNARGS}"
 
-      # - name: Compile WebRTC
-      #   run: |
-      #     set -x
-      #     cd ${GITHUB_WORKSPACE}/src
-      #     ninja -v -C out
-
-      # - name: Archive WebRTC header files
-      #   if: ${{ matrix.headers == true }}
-      #   run: |
-      #     set -x
-
-      #     cd ${GITHUB_WORKSPACE}/src
-      #     for excluded in ${HEADER_EXCLUDES}; do
-      #       FIND_ARGS="$FIND_ARGS -path ./$excluded -prune -o"
-      #     done
-      #     find . ${FIND_ARGS} -type f -a \( -name '*.h' -o -name LICENSE -o -name COPYING \) -print -exec tar rf ${OUTPUT_NAME}.tar {} \;
-      #     echo 'done'
+      - name: Compile WebRTC
+        run: |
+          set -x
+          cd ${GITHUB_WORKSPACE}/src
+          ninja -v -C out
 
       # - name: Show iOS artifacts
       #   if: ${{ matrix.os == 'ios' }}
       #   run: |
       #     ls -laR ${GITHUB_WORKSPACE}/src/out/
 
-      # - id: ios-archs
-      #   if: ${{ matrix.os == 'ios' }}
-      #   name: Store iOS artifact architectures
-      #   run: |
-      #     echo "archs=\"${{ matrix.cpu }} ${archs}\"" >> $GITHUB_OUTPUT
-
-      # - id: android-archs
-      #   if: ${{ matrix.os == 'android' }}
-      #   name: Store Android artifact architectures
-      #   run: |
-      #     echo "archs=\"${{ matrix.cpu }} ${archs}\"" >> $GITHUB_OUTPUT
-
-      # - name: Archive artifacts
-      #   run: |
-      #     set -x
-      #     cd ${GITHUB_WORKSPACE}/src
-
-      #     for included in ${{ matrix.artifacts }}; do
-      #       tar rf ${OUTPUT_NAME}.tar ${included}
-      #     done
-
-      #     bzip2 ${OUTPUT_NAME}.tar
-
       # - name: build for iphoneos
       #   if: ${{ matrix.target_os == 'iphoneos' }}
       #   run: echo ok
 
-      - name: Upload artifacts
+      - name: Upload JAR & JNI library
         uses: actions/upload-artifact@v3
+        if: ${{ matrix.os == 'android' }}
+        with:
+          name: ${{ env.OUTPUT_NAME }}
+          path: |
+            src/out/lib.java/sdk/android/libwebrtc.jar 
+            src/out/libjingle_peerconnection_so.so
+
+      - name: Upload framework
+        uses: actions/upload-artifact@v3
+        if: ${{ matrix.os == 'mac' || matrix.os == 'ios' }}
+        with:
+          name: ${{ env.OUTPUT_NAME }}
+          path: |
+            src/out/WebRTC.framework
+
+      - name: Upload static libraries
+        uses: actions/upload-artifact@v3
+        if: ${{ matrix.os == 'linux' || matrix.os == 'mac' }}
+        with:
+          name: ${{ env.OUTPUT_NAME }}
+          path: |
+            src/out/obj/libwebrtc.a
+
+      - name: Upload headers
+        uses: actions/upload-artifact@v3
+        if: ${{ matrix.os == 'linux' || matrix.os == 'mac' }}
         with:
           name: ${{ env.OUTPUT_NAME }}
           path: |
@@ -283,7 +243,6 @@ jobs:
             !src/third_party/hunspell
             !src/third_party/icu
             !src/third_party/khronos
-            # src/${{ env.OUTPUT_NAME }}.tar.bz2
           retention-days: 5
 
   release:
@@ -291,7 +250,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Draft a release
-        if: github.ref == 'refs/heads/master'
+        # if: github.ref == 'refs/heads/master'
         uses: actions/create-release@v1
         id: create_release
         with:

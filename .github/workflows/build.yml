@@ -8,7 +8,7 @@ env:
   DEPOT_TOOLS_REPOSITORY: https://chromium.googlesource.com/chromium/tools/depot_tools
 
 jobs:
-  prepare:
+  pre_build:
     runs-on: ubuntu-latest
     outputs:
       revision: ${{ steps.fetch-revision.outputs.revision }}
@@ -25,13 +25,16 @@ jobs:
           echo "revision=${GIT_COMMIT}" >> $GITHUB_OUTPUT
 
   build:
-    needs: prepare
+    needs: pre_build
+    outputs:
+      ios-archs: ${{ steps.ios-archs.outputs.archs }}
+      android-archs: ${{ steps.android-archs.outputs.archs }}
     strategy:
       # max-parallel: 2
       matrix:
         include:
           - os: linux
-            arch: x64
+            cpu: x64
             tag: -DataChannel
             headers: true
             gnargs: >-
@@ -78,74 +81,49 @@ jobs:
               libyuv_include_tests=false
             target_os: '["linux"]'
             runs_on: ubuntu-22.04
+            artifacts: out/obj/libwebrtc.a
 
-          - os: android
-            cpu: arm
-            gnargs: >-
-              is_component_ffmpeg=true
-              proprietary_codecs=true
-            target_os: '["linux", "android"]'
-            runs_on: ubuntu-22.04
-            artifacts: >-
-              out/lib.java/sdk/android
-              out/libjingle_peerconnection_so.so
+          # - os: android
+          #   cpu: arm
+          #   gnargs: is_component_ffmpeg=true proprietary_codecs=true
+          #   target_os: '["linux", "android"]'
+          #   runs_on: ubuntu-22.04
+          #   artifacts: out/lib.java/sdk/android/libwebrtc.jar out/libjingle_peerconnection_so.so
+          # - os: android
+          #   cpu: arm64
+          #   gnargs: is_component_ffmpeg=true proprietary_codecs=true
+          #   target_os: '["linux", "android"]'
+          #   runs_on: ubuntu-22.04
+          #   artifacts: out/lib.java/sdk/android/libwebrtc.jar out/libjingle_peerconnection_so.so
 
-          - os: android
-            cpu: arm64
-            gnargs: >-
-              is_component_ffmpeg=true
-              proprietary_codecs=true
-            target_os: '["linux", "android"]'
-            runs_on: ubuntu-22.04
-            artifacts: >-
-              out/lib.java/sdk/android
-              out/libjingle_peerconnection_so.so
+          # - os: android
+          #   cpu: x86
+          #   gnargs: is_component_ffmpeg=true proprietary_codecs=true
+          #   target_os: '["linux", "android"]'
+          #   runs_on: ubuntu-22.04
+          #   artifacts: out/lib.java/sdk/android/libwebrtc.jar out/libjingle_peerconnection_so.so
+          # - os: android
+          #   cpu: x64
+          #   gnargs: is_component_ffmpeg=true proprietary_codecs=true
+          #   target_os: '["linux", "android"]'
+          #   runs_on: ubuntu-22.04
+          #   artifacts: out/lib.java/sdk/android/libwebrtc.jar out/libjingle_peerconnection_so.so
 
-          - os: android
-            cpu: x86
-            gnargs: >-
-              is_component_ffmpeg=true
-              proprietary_codecs=true
-            target_os: '["linux", "android"]'
-            runs_on: ubuntu-22.04
-            artifacts: >-
-              out/lib.java/sdk/android
-              out/libjingle_peerconnection_so.so
+          # - os: ios
+          #   cpu: arm64
+          #   headers: true
+          #   gnargs: proprietary_codecs=true ios_enable_code_signing=false
+          #   target_os: '["ios", "mac"]'
+          #   runs_on: macos-latest
+          #   artifacts: out/WebRTC.framework out/obj/libwebrtc.a
 
-          - os: android
-            cpu: x64
-            gnargs: >-
-              is_component_ffmpeg=true
-              proprietary_codecs=true
-            target_os: '["linux", "android"]'
-            runs_on: ubuntu-22.04
-            artifacts: >-
-              out/lib.java/sdk/android
-              out/libjingle_peerconnection_so.so
-
-          - os: ios
-            cpu: arm64
-            headers: true
-            gnargs: >-
-              proprietary_codecs=true
-              ios_enable_code_signing=false
-            target_os: '["ios", "mac"]'
-            runs_on: macos-latest
-            # artifacts: >-
-            #   out/lib.java/sdk/android
-            #   out/libjingle_peerconnection_so.so
-
-          - os: mac
-            cpu: x64
-            headers: true
-            gnargs: >-
-              proprietary_codecs=true
-              ios_enable_code_signing=false
-            target_os: '["ios", "mac"]'
-            runs_on: macos-latest
-            # artifacts: >-
-            #   out/lib.java/sdk/android
-            #   out/libjingle_peerconnection_so.so
+          # - os: mac
+          #   cpu: x64
+          #   headers: true
+          #   gnargs: proprietary_codecs=true ios_enable_code_signing=false
+          #   target_os: '["ios", "mac"]'
+          #   runs_on: macos-latest
+          #   artifacts: out/WebRTC.framework out/obj/libwebrtc.a
 
     runs-on: ${{ matrix.runs_on }}
 
@@ -168,27 +146,27 @@ jobs:
         rtc_build_examples=false
         treat_warnings_as_errors=false
         ${{ matrix.gnargs }}
-      HEADER_EXCLUDES: >-
-        out
-        ios
-        sdk
-        examples
-        test
-        build
-        buildtools
-        third_party/blink
-        third_party/llvm-build
-        third_party/win_build_output
-        third_party/android_ndk
-        third_party/catapult
-        third_party/googletest
-        third_party/android_deps
-        third_party/android_sdk
-        third_party/crashpad
-        third_party/perfetto
-        third_party/hunspell
-        third_party/icu
-        third_party/khronos
+      # HEADER_EXCLUDES: >-
+      #   out
+      #   ios
+      #   sdk
+      #   examples
+      #   test
+      #   build
+      #   buildtools
+      #   third_party/blink
+      #   third_party/llvm-build
+      #   third_party/win_build_output
+      #   third_party/android_ndk
+      #   third_party/catapult
+      #   third_party/googletest
+      #   third_party/android_deps
+      #   third_party/android_sdk
+      #   third_party/crashpad
+      #   third_party/perfetto
+      #   third_party/hunspell
+      #   third_party/icu
+      #   third_party/khronos
 
     steps:
       # - name: Maximize build space
@@ -220,48 +198,60 @@ jobs:
           set -x
           gclient config --name src --unmanaged ${WEBRTC_REPOSITORY}
           echo 'target_os = ${{ matrix.target_os }}' >> .gclient
-          gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ needs.prepare.outputs.revision }}
+          gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ needs.pre_build.outputs.revision }}
           echo "${{ matrix.headers }}"
 
-      - name: Configure WebRTC
-        run: |
-          set -x
-          cd ${GITHUB_WORKSPACE}/src
-          gn gen out --args="${GNARGS}"
+      # - name: Configure WebRTC
+      #   run: |
+      #     set -x
+      #     cd ${GITHUB_WORKSPACE}/src
+      #     gn gen out --args="${GNARGS}"
 
-      - name: Compile WebRTC
-        run: |
-          set -x
-          cd ${GITHUB_WORKSPACE}/src
-          ninja -v -C out
+      # - name: Compile WebRTC
+      #   run: |
+      #     set -x
+      #     cd ${GITHUB_WORKSPACE}/src
+      #     ninja -v -C out
 
-      - name: Archive WebRTC header files
-        if: ${{ matrix.headers == true }}
-        run: |
-          set -x
+      # - name: Archive WebRTC header files
+      #   if: ${{ matrix.headers == true }}
+      #   run: |
+      #     set -x
 
-          cd ${GITHUB_WORKSPACE}/src
-          for excluded in ${HEADER_EXCLUDES}; do
-            FIND_ARGS="$FIND_ARGS -path ./$excluded -prune -o"
-          done
-          find . ${FIND_ARGS} -type f -a \( -name '*.h' -o -name LICENSE -o -name COPYING \) -print -exec tar rf ${OUTPUT_NAME}.tar {} \;
-          echo 'done'
+      #     cd ${GITHUB_WORKSPACE}/src
+      #     for excluded in ${HEADER_EXCLUDES}; do
+      #       FIND_ARGS="$FIND_ARGS -path ./$excluded -prune -o"
+      #     done
+      #     find . ${FIND_ARGS} -type f -a \( -name '*.h' -o -name LICENSE -o -name COPYING \) -print -exec tar rf ${OUTPUT_NAME}.tar {} \;
+      #     echo 'done'
 
-      - name: Show iOS artifacts
-        if: ${{ matrix.os == 'ios' }}
-        run: |
-          ls -laR ${GITHUB_WORKSPACE}/src/out/
+      # - name: Show iOS artifacts
+      #   if: ${{ matrix.os == 'ios' }}
+      #   run: |
+      #     ls -laR ${GITHUB_WORKSPACE}/src/out/
 
-      - name: Archive artifacts
-        run: |
-          set -x
-          cd ${GITHUB_WORKSPACE}/src
+      # - id: ios-archs
+      #   if: ${{ matrix.os == 'ios' }}
+      #   name: Store iOS artifact architectures
+      #   run: |
+      #     echo "archs=\"${{ matrix.cpu }} ${archs}\"" >> $GITHUB_OUTPUT
 
-          for included in ${{ matrix.artifacts }}; do
-            tar rf ${OUTPUT_NAME}.tar ${included}
-          done
+      # - id: android-archs
+      #   if: ${{ matrix.os == 'android' }}
+      #   name: Store Android artifact architectures
+      #   run: |
+      #     echo "archs=\"${{ matrix.cpu }} ${archs}\"" >> $GITHUB_OUTPUT
 
-          bzip2 ${OUTPUT_NAME}.tar
+      # - name: Archive artifacts
+      #   run: |
+      #     set -x
+      #     cd ${GITHUB_WORKSPACE}/src
+
+      #     for included in ${{ matrix.artifacts }}; do
+      #       tar rf ${OUTPUT_NAME}.tar ${included}
+      #     done
+
+      #     bzip2 ${OUTPUT_NAME}.tar
 
       # - name: build for iphoneos
       #   if: ${{ matrix.target_os == 'iphoneos' }}
@@ -271,8 +261,19 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ env.OUTPUT_NAME }}
-          path: src/${{ env.OUTPUT_NAME }}.tar.bz2
+          path: 
+            <<: *headers
+            # src/${{ env.OUTPUT_NAME }}.tar.bz2
           retention-days: 5
+
+  post_build:
+    needs: build
+    strategy:
+      # max-parallel: 2
+      matrix:
+        include:
+          # - os: linux
+
 
   release:
     needs: build
@@ -288,3 +289,26 @@ jobs:
           release_name: WebRTC-${{ env.WEBRTC_RELEASE }}
           # tag_name: ${{ github.ref }}
   #        body_path: CHANGELOG.md
+
+.headers: &headers
+  src/**/*.h
+  !src/out
+  !src/ios
+  !src/sdk
+  !src/examples
+  !src/test
+  !src/build
+  !src/buildtools
+  !src/third_party/blink
+  !src/third_party/llvm-build
+  !src/third_party/win_build_output
+  !src/third_party/android_ndk
+  !src/third_party/catapult
+  !src/third_party/googletest
+  !src/third_party/android_deps
+  !src/third_party/android_sdk
+  !src/third_party/crashpad
+  !src/third_party/perfetto
+  !src/third_party/hunspell
+  !src/third_party/icu
+  !src/third_party/khronos

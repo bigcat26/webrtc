@@ -1,3 +1,5 @@
-# WebRTC 
+# WebRTC
 
-Build and release WebRTC binaries for multiple platforms automatic by Github Actions
+[![ci-workflow](https://github.com/bigcat26/webrtc/actions/workflows/build.yml/badge.svg)](https://github.com/bigcat26/webrtc/actions/workflows/build.yml)
+
+Build WebRTC binaries for multiple configurations

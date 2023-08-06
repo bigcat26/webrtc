@@ -81,40 +81,40 @@ jobs:
             target_os: '["linux"]'
             runs_on: ubuntu-22.04
 
-          - os: android
-            cpu: arm
-            gnargs: is_component_ffmpeg=true proprietary_codecs=true
-            target_os: '["linux", "android"]'
-            runs_on: ubuntu-22.04
-          - os: android
-            cpu: arm64
-            gnargs: is_component_ffmpeg=true proprietary_codecs=true
-            target_os: '["linux", "android"]'
-            runs_on: ubuntu-22.04
-          - os: android
-            cpu: x86
-            gnargs: is_component_ffmpeg=true proprietary_codecs=true
-            target_os: '["linux", "android"]'
-            runs_on: ubuntu-22.04
-          - os: android
-            cpu: x64
-            gnargs: is_component_ffmpeg=true proprietary_codecs=true
-            target_os: '["linux", "android"]'
-            runs_on: ubuntu-22.04
+          # - os: android
+          #   cpu: arm
+          #   gnargs: is_component_ffmpeg=true proprietary_codecs=true
+          #   target_os: '["linux", "android"]'
+          #   runs_on: ubuntu-22.04
+          # - os: android
+          #   cpu: arm64
+          #   gnargs: is_component_ffmpeg=true proprietary_codecs=true
+          #   target_os: '["linux", "android"]'
+          #   runs_on: ubuntu-22.04
+          # - os: android
+          #   cpu: x86
+          #   gnargs: is_component_ffmpeg=true proprietary_codecs=true
+          #   target_os: '["linux", "android"]'
+          #   runs_on: ubuntu-22.04
+          # - os: android
+          #   cpu: x64
+          #   gnargs: is_component_ffmpeg=true proprietary_codecs=true
+          #   target_os: '["linux", "android"]'
+          #   runs_on: ubuntu-22.04
 
-          - os: ios
-            cpu: arm64
-            headers: true
-            gnargs: proprietary_codecs=true ios_enable_code_signing=false
-            target_os: '["ios", "mac"]'
-            runs_on: macos-latest
+          # - os: ios
+          #   cpu: arm64
+          #   headers: true
+          #   gnargs: proprietary_codecs=true ios_enable_code_signing=false
+          #   target_os: '["ios", "mac"]'
+          #   runs_on: macos-latest
 
-          - os: mac
-            cpu: x64
-            headers: true
-            gnargs: proprietary_codecs=true ios_enable_code_signing=false
-            target_os: '["ios", "mac"]'
-            runs_on: macos-latest
+          # - os: mac
+          #   cpu: x64
+          #   headers: true
+          #   gnargs: proprietary_codecs=true ios_enable_code_signing=false
+          #   target_os: '["ios", "mac"]'
+          #   runs_on: macos-latest
 
     runs-on: ${{ matrix.runs_on }}
 
@@ -259,3 +259,5 @@ jobs:
           release_name: WebRTC-${{ env.WEBRTC_RELEASE }}
           # tag_name: ${{ github.ref }}
   #        body_path: CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

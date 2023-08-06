@@ -119,7 +119,7 @@ jobs:
     runs-on: ${{ matrix.runs_on }}
 
     env:
-      OUTPUT_NAME: WebRTC${{ matrix.tag }}-${{WEBRTC_RELEASE}}-${{ matrix.os }}-${{ matrix.cpu }}
+      # OUTPUT_NAME: WebRTC${{ matrix.tag }}-${{WEBRTC_RELEASE}}-${{ matrix.os }}-${{ matrix.cpu }}
       GNARGS: >-
         target_os="${{ matrix.os }}"
         target_cpu="${{ matrix.cpu }}"
@@ -191,38 +191,64 @@ jobs:
       #   if: ${{ matrix.target_os == 'iphoneos' }}
       #   run: echo ok
 
-      - name: Upload JAR & JNI library
-        uses: actions/upload-artifact@v3
-        if: ${{ matrix.os == 'android' }}
-        with:
-          name: ${{ env.OUTPUT_NAME }}
-          path: |
-            src/out/lib.java/sdk/android/libwebrtc.jar 
-            src/out/libjingle_peerconnection_so.so
+      # - name: Upload JAR & JNI library
+      #   uses: actions/upload-artifact@v3
+      #   if: ${{ matrix.os == 'android' }}
+      #   with:
+      #     name: ${{ env.OUTPUT_NAME }}
+      #     path: |
+      #       src/out/lib.java/sdk/android/libwebrtc.jar 
+      #       src/out/libjingle_peerconnection_so.so
 
-      - name: Upload framework
-        uses: actions/upload-artifact@v3
-        if: ${{ matrix.os == 'mac' || matrix.os == 'ios' }}
-        with:
-          name: ${{ env.OUTPUT_NAME }}
-          path: |
-            src/out/WebRTC.framework
+      - name: Move output files
+        run: |
+          if [ -f src/out/lib.java/sdk/android/libwebrtc.jar ]; do
+            mkdir -p jar
+            mv src/out/lib.java/sdk/android/libwebrtc.jar jar
 
-      - name: Upload static libraries
+          if [ -f src/out/libjingle_peerconnection_so.so ]; do
+            mkdir -p bin
+            mv src/out/libjingle_peerconnection_so.so bin
+          done
+
+          if [ -d src/out/WebRTC.framework ]; do
+            mkdir -p frameworks
+            mv src/out/WebRTC.framework frameworks
+          done
+
+          if [ -f src/out/obj/libwebrtc.a ]; do
+            mkdir -p lib
+            mv src/out/obj/libwebrtc.a lib
+          done
+
+      # - name: Upload framework
+      #   uses: actions/upload-artifact@v3
+      #   if: ${{ matrix.os == 'mac' || matrix.os == 'ios' }}
+      #   with:
+      #     name: ${{ env.OUTPUT_NAME }}
+      #     path: |
+      #       src/out/WebRTC.framework
+
+      # - name: Upload static libraries
+      #   uses: actions/upload-artifact@v3
+      #   if: ${{ matrix.os == 'linux' || matrix.os == 'mac' }}
+      #   with:
+      #     name: ${{ env.OUTPUT_NAME }}
+      #     path: |
+      #       src/out/obj/libwebrtc.a
+
+      - name: Upload artifacts
+        id: upload-artifacts
         uses: actions/upload-artifact@v3
         if: ${{ matrix.os == 'linux' || matrix.os == 'mac' }}
         with:
-          name: ${{ env.OUTPUT_NAME }}
-          path: |
-            src/out/obj/libwebrtc.a
-
-      - name: Upload headers
-        uses: actions/upload-artifact@v3
-        if: ${{ matrix.os == 'linux' || matrix.os == 'mac' }}
-        with:
-          name: ${{ env.OUTPUT_NAME }}
+          name: WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}
           path: |
             src/**/*.h
+            bin
+            lib
+            jar
+            frameworks
             !src/out
             !src/ios
             !src/sdk
@@ -263,7 +289,7 @@ jobs:
           for os in "${{ matrix.os }}"; do
             for cpu in "${{ matrix.cpu }}"; do
               for tag in "${{ matrix.tag }}"; do
-                file_name="WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip"
+                file_name="WebRTC${{ matrix.tag }}-${WEBRTC_RELEASE}-${{ matrix.os }}-${{ matrix.cpu }}.zip"
                 files+=("$file_name")
                 done
             done
@@ -280,24 +306,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download Android Artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: ${{ needs.build.outputs.android-archs }}
+      # - name: Download Android Artifacts
+      #   uses: actions/download-artifact@v2
+      #   with:
+      #     name: ${{ needs.build.outputs.android-archs }}
 
-      - name: Download iOS Artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: ${{ needs.build.outputs.ios-archs }}
+      # - name: Download iOS Artifacts
+      #   uses: actions/download-artifact@v2
+      #   with:
+      #     name: ${{ needs.build.outputs.ios-archs }}
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: ${{ needs.pre_artifacts.outputs.files }}
-          tag_name: v1.0  # Replace with the desired tag name
-          title: Release v1.0  # Replace with the desired release title
-          body: |
-            Release notes for v1.0  # Replace with the release notes
+      # - name: Create Release
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     files: ${{ needs.pre_artifacts.outputs.files }}
+      #     tag_name: v1.0  # Replace with the desired tag name
+      #     title: Release v1.0  # Replace with the desired release title
+      #     body: |
+      #       Release notes for v1.0  # Replace with the release notes
 
       - name: Publish Release
         uses: softprops/action-gh-release@v1

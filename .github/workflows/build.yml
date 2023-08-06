@@ -1,7 +1,11 @@
 name: ci-workflow
 on: [push]
 
+permissions:
+  contents: write
+
 env:
+  GITHUB_TOKEN: ${{ github.token }}
   WEBRTC_RELEASE: M112
   WEBRTC_BRANCH_HEAD: branch-heads/5615
   WEBRTC_REPOSITORY: https://chromium.googlesource.com/external/webrtc/
@@ -81,21 +85,24 @@ jobs:
             target_os: '["linux"]'
             runs_on: ubuntu-22.04
 
-          # - os: android
-          #   cpu: arm
-          #   gnargs: is_component_ffmpeg=true proprietary_codecs=true
-          #   target_os: '["linux", "android"]'
-          #   runs_on: ubuntu-22.04
+          - os: android
+            cpu: arm
+            gnargs: is_component_ffmpeg=true proprietary_codecs=true
+            target_os: '["linux", "android"]'
+            runs_on: ubuntu-22.04
+
           # - os: android
           #   cpu: arm64
           #   gnargs: is_component_ffmpeg=true proprietary_codecs=true
           #   target_os: '["linux", "android"]'
           #   runs_on: ubuntu-22.04
+
           # - os: android
           #   cpu: x86
           #   gnargs: is_component_ffmpeg=true proprietary_codecs=true
           #   target_os: '["linux", "android"]'
           #   runs_on: ubuntu-22.04
+
           # - os: android
           #   cpu: x64
           #   gnargs: is_component_ffmpeg=true proprietary_codecs=true
@@ -299,6 +306,7 @@ jobs:
           # Output the list of file names as a space-separated string
           # echo "::set-output name=file_list::${files[*]}"
           echo "file_list=${files[*]}" >> $GITHUB_OUTPUT
+          echo file_list: $file_list
 
   artifacts:
     needs: 
@@ -307,37 +315,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Download Android Artifacts
+      # - name: Download Android Artifacts
+      #   uses: actions/download-artifact@v2
+      #   with:
+      #     name: ${{ needs.build.outputs.android-archs }}
+
+      # - name: Download iOS Artifacts
+      #   uses: actions/download-artifact@v2
+      #   with:
+      #     name: ${{ needs.build.outputs.ios-archs }}
+
+      - name: Download artifacts
         uses: actions/download-artifact@v2
-        with:
-          name: ${{ needs.build.outputs.android-archs }}
 
-      - name: Download iOS Artifacts
-        uses: actions/download-artifact@v2
+      - name: List downloaded artifacts
+        run: |
+          ls artifact
+      
+      - name: Create release
+        uses: actions/create-release@v1
         with:
-          name: ${{ needs.build.outputs.ios-archs }}
+          files: artifact/**
+          
+      # - name: Create Release
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     files: ${{ needs.pre_artifacts.outputs.files }}
+      #     tag_name: v1.0  # Replace with the desired tag name
+      #     title: Release v1.0  # Replace with the desired release title
+      #     body: |
+      #       Release notes for v1.0  # Replace with the release notes
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: ${{ needs.pre_artifacts.outputs.files }}
-          tag_name: v1.0  # Replace with the desired tag name
-          title: Release v1.0  # Replace with the desired release title
-          body: |
-            Release notes for v1.0  # Replace with the release notes
-
-      - name: Publish Release
-        uses: softprops/action-gh-release@v1
-        with:
-          draft: true
-          prerelease: true
-          release_name: WebRTC-${{ env.WEBRTC_RELEASE }}
-          files: ${{ needs.pre_artifacts.outputs.files }}
-          tag_name: v1.0  # Replace with the desired tag name
-          title: Release v1.0  # Replace with the desired release title
-          body: |
-            Release notes for v1.0  # Replace with the release notes
-          publish: true
+      # - name: Publish Release
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     draft: true
+      #     prerelease: true
+      #     release_name: WebRTC-${{ env.WEBRTC_RELEASE }}
+      #     files: ${{ needs.pre_artifacts.outputs.files }}
+      #     tag_name: v1.0  # Replace with the desired tag name
+      #     title: Release v1.0  # Replace with the desired release title
+      #     body: |
+      #       Release notes for v1.0  # Replace with the release notes
+      #     publish: true
 
   # release:
   #   needs: build

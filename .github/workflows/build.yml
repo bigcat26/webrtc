@@ -202,25 +202,25 @@ jobs:
 
       - name: Move output files
         run: |
-          if [ -f src/out/lib.java/sdk/android/libwebrtc.jar ]; do
+          if [ -f src/out/lib.java/sdk/android/libwebrtc.jar ]; then
             mkdir -p jar
             mv src/out/lib.java/sdk/android/libwebrtc.jar jar
-          done
+          fi
 
-          if [ -f src/out/libjingle_peerconnection_so.so ]; do
+          if [ -f src/out/libjingle_peerconnection_so.so ]; then
             mkdir -p bin
             mv src/out/libjingle_peerconnection_so.so bin
-          done
+          fi
 
-          if [ -d src/out/WebRTC.framework ]; do
+          if [ -d src/out/WebRTC.framework ]; then
             mkdir -p frameworks
             mv src/out/WebRTC.framework frameworks
-          done
+          fi
 
-          if [ -f src/out/obj/libwebrtc.a ]; do
+          if [ -f src/out/obj/libwebrtc.a ]; then
             mkdir -p lib
             mv src/out/obj/libwebrtc.a lib
-          done
+          fi
 
       # - name: Upload framework
       #   uses: actions/upload-artifact@v3

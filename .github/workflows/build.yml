@@ -330,12 +330,12 @@ jobs:
 
       - name: List downloaded artifacts
         run: |
-          ls artifact
+          ls -laR
       
       - name: Create release
         uses: actions/create-release@v1
         with:
-          files: artifact/**
+          files: ./**/*
           
       # - name: Create Release
       #   uses: softprops/action-gh-release@v1

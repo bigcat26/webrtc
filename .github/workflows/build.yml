@@ -229,46 +229,71 @@ jobs:
             mv src/out/WebRTC.framework framework
           fi
 
-          find src \
-          \( \
-            -path "./jar/*" -o \
-            -path "./bin/*" -o \
-            -path "./lib/*" -o \
-            -path "./framework/*" -o \
-            -name "*.h" \
-          \) \
-          -prune -o \
-          \( \
-            -path "./src/out" -o \
-            -path "./src/ios" -o \
-            -path "./src/sdk" -o \
-            -path "./src/examples" -o \
-            -path "./src/test" -o \
-            -path "./src/build" -o \
-            -path "./src/buildtools" -o \
-            -path "./src/third_party/blink" -o \
-            -path "./src/third_party/llvm-build" -o \
-            -path "./src/third_party/win_build_output" -o \
-            -path "./src/third_party/android_ndk" -o \
-            -path "./src/third_party/catapult" -o \
-            -path "./src/third_party/googletest" -o \
-            -path "./src/third_party/android_deps" -o \
-            -path "./src/third_party/android_sdk" -o \
-            -path "./src/third_party/crashpad" -o \
-            -path "./src/third_party/perfetto" -o \
-            -path "./src/third_party/hunspell" -o \
-            -path "./src/third_party/icu" -o \
-            -path "./src/third_party/khronos" \
-          \) \
-          | zip -rvy9@ WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
+      # - name: Create archive
+      #   run: |
+      #     find src \
+      #       \( \
+      #         -path "./jar/*" -o \
+      #         -path "./bin/*" -o \
+      #         -path "./lib/*" -o \
+      #         -path "./framework/*" -o \
+      #         -name "*.h" \
+      #       \) \
+      #       -prune -o \
+      #       \( \
+      #         -path "./src/out" -o \
+      #         -path "./src/ios" -o \
+      #         -path "./src/sdk" -o \
+      #         -path "./src/examples" -o \
+      #         -path "./src/test" -o \
+      #         -path "./src/build" -o \
+      #         -path "./src/buildtools" -o \
+      #         -path "./src/third_party/blink" -o \
+      #         -path "./src/third_party/llvm-build" -o \
+      #         -path "./src/third_party/win_build_output" -o \
+      #         -path "./src/third_party/android_ndk" -o \
+      #         -path "./src/third_party/catapult" -o \
+      #         -path "./src/third_party/googletest" -o \
+      #         -path "./src/third_party/android_deps" -o \
+      #         -path "./src/third_party/android_sdk" -o \
+      #         -path "./src/third_party/crashpad" -o \
+      #         -path "./src/third_party/perfetto" -o \
+      #         -path "./src/third_party/hunspell" -o \
+      #         -path "./src/third_party/icu" -o \
+      #         -path "./src/third_party/khronos" \
+      #       \) \
+      #       | zip -rvy9@ WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
 
       - name: Upload artifacts
-        id: upload-artifacts
         uses: actions/upload-artifact@v3
-        if: ${{ matrix.os == 'linux' || matrix.os == 'mac' }}
         with:
           name: WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
-          path: WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
+          path: |
+            src/**/*.h
+            bin
+            lib
+            jar
+            frameworks
+            !src/out
+            !src/ios
+            !src/sdk
+            !src/examples
+            !src/test
+            !src/build
+            !src/buildtools
+            !src/third_party/blink
+            !src/third_party/llvm-build
+            !src/third_party/win_build_output
+            !src/third_party/android_ndk
+            !src/third_party/catapult
+            !src/third_party/googletest
+            !src/third_party/android_deps
+            !src/third_party/android_sdk
+            !src/third_party/crashpad
+            !src/third_party/perfetto
+            !src/third_party/hunspell
+            !src/third_party/icu
+            !src/third_party/khronos
           retention-days: 5
 
   pre_artifacts:
@@ -327,8 +352,8 @@ jobs:
       - name: Create release
         uses: actions/create-release@v1
         with:
-  #         draft: true
-  #         prerelease: true
+          draft: true
+          prerelease: true
           release_name: ${{ env.WEBRTC_RELEASE }}
           tag_name: ${{ env.WEBRTC_RELEASE }}
   #        body_path: CHANGELOG.md

@@ -264,7 +264,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
+          # name: WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
           path: WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
 
       #     name: WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
@@ -339,10 +339,11 @@ jobs:
       - name: List downloaded artifacts
         id: list-downloaded-artifacts
         run: |
+          ls -laR
           ARTIFACTS_LIST=$(find . -name "*.zip")
           echo "ARTIFACTS_LIST=${ARTIFACTS_LIST}" >> $GITHUB_OUTPUT
 
-          for artifact in ARTIFACTS_LIST; do
+          for artifact in ${ARTIFACTS_LIST}; do
             echo artifact found: ${artifact}
           done
 

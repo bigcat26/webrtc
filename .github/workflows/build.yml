@@ -14,8 +14,8 @@ env:
 jobs:
   pre_build:
     runs-on: ubuntu-latest
-    outputs:
-      revision: ${{ steps.fetch-revision.outputs.revision }}
+    # outputs:
+    #   revision: ${{ steps.fetch-revision.outputs.revision }}
     steps:
       - id: fetch-revision
         name: Get WebRTC release revision
@@ -26,13 +26,11 @@ jobs:
           echo "WebRTC repository:  ${WEBRTC_REPOSITORY}"
           echo "WebRTC git commit:  ${GIT_COMMIT}"
 
-          echo "revision=${GIT_COMMIT}" >> $GITHUB_OUTPUT
+          echo ::set-env name=revision::${GIT_COMMIT}
+        # echo "revision=${GIT_COMMIT}" >> $GITHUB_OUTPUT
 
   build:
     needs: pre_build
-    outputs:
-      ios-archs: ${{ steps.ios-archs.outputs.archs }}
-      android-archs: ${{ steps.android-archs.outputs.archs }}
     strategy:
       # max-parallel: 2
       matrix:
@@ -175,7 +173,7 @@ jobs:
           set -x
           gclient config --name src --unmanaged ${WEBRTC_REPOSITORY}
           echo 'target_os = ${{ matrix.target_os }}' >> .gclient
-          gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ needs.pre_build.outputs.revision }}
+          gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ env.revision }}
 
       - name: Configure WebRTC
         run: |
@@ -229,169 +227,134 @@ jobs:
             mv src/out/WebRTC.framework framework
           fi
 
-      # - name: Create archive
-      #   run: |
-      #     find src \
-      #       \( \
-      #         -path "./jar/*" -o \
-      #         -path "./bin/*" -o \
-      #         -path "./lib/*" -o \
-      #         -path "./framework/*" -o \
-      #         -name "*.h" \
-      #       \) \
-      #       -prune -o \
-      #       \( \
-      #         -path "./src/out" -o \
-      #         -path "./src/ios" -o \
-      #         -path "./src/sdk" -o \
-      #         -path "./src/examples" -o \
-      #         -path "./src/test" -o \
-      #         -path "./src/build" -o \
-      #         -path "./src/buildtools" -o \
-      #         -path "./src/third_party/blink" -o \
-      #         -path "./src/third_party/llvm-build" -o \
-      #         -path "./src/third_party/win_build_output" -o \
-      #         -path "./src/third_party/android_ndk" -o \
-      #         -path "./src/third_party/catapult" -o \
-      #         -path "./src/third_party/googletest" -o \
-      #         -path "./src/third_party/android_deps" -o \
-      #         -path "./src/third_party/android_sdk" -o \
-      #         -path "./src/third_party/crashpad" -o \
-      #         -path "./src/third_party/perfetto" -o \
-      #         -path "./src/third_party/hunspell" -o \
-      #         -path "./src/third_party/icu" -o \
-      #         -path "./src/third_party/khronos" \
-      #       \) \
-      #       | zip -rvy9@ WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
-          path: |
-            src/**/*.h
-            bin
-            lib
-            jar
-            frameworks
-            !src/out
-            !src/ios
-            !src/sdk
-            !src/examples
-            !src/test
-            !src/build
-            !src/buildtools
-            !src/third_party/blink
-            !src/third_party/llvm-build
-            !src/third_party/win_build_output
-            !src/third_party/android_ndk
-            !src/third_party/catapult
-            !src/third_party/googletest
-            !src/third_party/android_deps
-            !src/third_party/android_sdk
-            !src/third_party/crashpad
-            !src/third_party/perfetto
-            !src/third_party/hunspell
-            !src/third_party/icu
-            !src/third_party/khronos
-          retention-days: 5
-
-  pre_artifacts:
-    needs: 
-      - build
-    runs-on: ubuntu-latest
-    outputs:
-      files: ${{ steps.generate-file-list.outputs.revision }}
-
-    steps:
-      - name: Generate File List
-        id: generate-file-list
+      - name: Create archive
         run: |
-          # Initialize an empty array to store the file names
-          files=()
+          find src \
+            \( \
+              -path "./jar/*" -o \
+              -path "./bin/*" -o \
+              -path "./lib/*" -o \
+              -path "./framework/*" -o \
+              -name "*.h" \
+            \) \
+            -prune -o \
+            \( \
+              -path "./src/out" -o \
+              -path "./src/ios" -o \
+              -path "./src/sdk" -o \
+              -path "./src/examples" -o \
+              -path "./src/test" -o \
+              -path "./src/build" -o \
+              -path "./src/buildtools" -o \
+              -path "./src/third_party/blink" -o \
+              -path "./src/third_party/llvm-build" -o \
+              -path "./src/third_party/win_build_output" -o \
+              -path "./src/third_party/android_ndk" -o \
+              -path "./src/third_party/catapult" -o \
+              -path "./src/third_party/googletest" -o \
+              -path "./src/third_party/android_deps" -o \
+              -path "./src/third_party/android_sdk" -o \
+              -path "./src/third_party/crashpad" -o \
+              -path "./src/third_party/perfetto" -o \
+              -path "./src/third_party/hunspell" -o \
+              -path "./src/third_party/icu" -o \
+              -path "./src/third_party/khronos" \
+            \) \
+            | zip -rvy9@ WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
 
-          # Loop through the matrix configuration and build the file names
-          for os in "${{ matrix.os }}"; do
-            for cpu in "${{ matrix.cpu }}"; do
-              for tag in "${{ matrix.tag }}"; do
-                file_name="WebRTC${{ matrix.tag }}-${WEBRTC_RELEASE}-${{ matrix.os }}-${{ matrix.cpu }}.zip"
-                files+=("$file_name")
-                done
-            done
-          done
+      # - name: Upload artifacts
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
+      #     path: |
+      #       src/**/*.h
+      #       bin
+      #       lib
+      #       jar
+      #       frameworks
+      #       !src/out
+      #       !src/ios
+      #       !src/sdk
+      #       !src/examples
+      #       !src/test
+      #       !src/build
+      #       !src/buildtools
+      #       !src/third_party/blink
+      #       !src/third_party/llvm-build
+      #       !src/third_party/win_build_output
+      #       !src/third_party/android_ndk
+      #       !src/third_party/catapult
+      #       !src/third_party/googletest
+      #       !src/third_party/android_deps
+      #       !src/third_party/android_sdk
+      #       !src/third_party/crashpad
+      #       !src/third_party/perfetto
+      #       !src/third_party/hunspell
+      #       !src/third_party/icu
+      #       !src/third_party/khronos
+      #     retention-days: 5
 
-          # Output the list of file names as a space-separated string
-          # echo "::set-output name=file_list::${files[*]}"
-          echo "file_list=${files[*]}" >> $GITHUB_OUTPUT
-          echo file_list: $file_list
+  # pre_artifacts:
+  #   needs: 
+  #     - build
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     files: ${{ steps.generate-file-list.outputs.file_list }}
+
+  #   steps:
+  #     - name: Generate File List
+  #       id: generate-file-list
+  #       run: |
+  #         # Initialize an empty array to store the file names
+  #         files=()
+
+  #         # Loop through the matrix configuration and build the file names
+  #         for os in "${{ matrix.os }}"; do
+  #           for cpu in "${{ matrix.cpu }}"; do
+  #             for tag in "${{ matrix.tag }}"; do
+  #               file_name="WebRTC${{ matrix.tag }}-${WEBRTC_RELEASE}-${{ matrix.os }}-${{ matrix.cpu }}.zip"
+  #               files+=("$file_name")
+  #               done
+  #           done
+  #         done
+
+  #         # Output the list of file names as a space-separated string
+  #         # echo "::set-output name=file_list::${files[*]}"
+  #         echo "file_list=${files[*]}" >> $GITHUB_OUTPUT
+  #         echo file_list: $file_list
 
   artifacts:
     needs: 
-      - pre_artifacts
+      - build
 
     runs-on: ubuntu-latest
 
     steps:
-      # - name: Download Android Artifacts
-      #   uses: actions/download-artifact@v2
-      #   with:
-      #     name: ${{ needs.build.outputs.android-archs }}
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
 
-      # - name: Download iOS Artifacts
-      #   uses: actions/download-artifact@v2
-      #   with:
-      #     name: ${{ needs.build.outputs.ios-archs }}
+      - name: List downloaded artifacts
+        run: |
+          ARTIFACTS_LIST=$(find . -name "*.zip")
+          echo ::set-env name=ARTIFACTS_LIST::${ARTIFACTS_LIST}
 
-      # - name: Download artifacts
-      #   uses: actions/download-artifact@v2
-
-      # - name: List downloaded artifacts
-      #   run: |
-      #     ls -laR
+          for artifact in ARTIFACTS_LIST; do
+            echo artifact found: ${artifact}
+          done
 
       - name: Create release
+        id: create-release
         uses: actions/create-release@v1
         with:
           draft: true
           prerelease: true
           release_name: ${{ env.WEBRTC_RELEASE }}
           tag_name: ${{ env.WEBRTC_RELEASE }}
-  #        body_path: CHANGELOG.md
-      # - name: Create Release
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     files: ${{ needs.pre_artifacts.outputs.files }}
-      #     tag_name: v1.0  # Replace with the desired tag name
-      #     title: Release v1.0  # Replace with the desired release title
-      #     body: |
-      #       Release notes for v1.0  # Replace with the release notes
 
-      # - name: Publish Release
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     draft: true
-      #     prerelease: true
-      #     release_name: WebRTC-${{ env.WEBRTC_RELEASE }}
-      #     files: ${{ needs.pre_artifacts.outputs.files }}
-      #     tag_name: v1.0  # Replace with the desired tag name
-      #     title: Release v1.0  # Replace with the desired release title
-      #     body: |
-      #       Release notes for v1.0  # Replace with the release notes
-      #     publish: true
-
-  # release:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Draft a release
-  #       # if: github.ref == 'refs/heads/master'
-  #       uses: actions/create-release@v1
-  #       id: create_release
-  #       with:
-  #         draft: true
-  #         prerelease: true
-  #         release_name: WebRTC-${{ env.WEBRTC_RELEASE }}
-  #         # tag_name: ${{ github.ref }}
-  # #        body_path: CHANGELOG.md
-  #       env:
-  #         GITHUB_TOKEN: ${{ github.token }}
+      - name: upload release assets
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: ${{ env.ARTIFACTS_LIST }}
+          asset_name: ${{ env.WEBRTC_RELEASE }}
+          asset_content_type: application/gzip

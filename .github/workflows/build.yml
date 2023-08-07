@@ -261,9 +261,11 @@ jobs:
             \) \
             | zip -rvy9@ WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
 
-      # - name: Upload artifacts
-      #   uses: actions/upload-artifact@v3
-      #   with:
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
+
       #     name: WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
       #     path: |
       #       src/**/*.h
@@ -327,7 +329,8 @@ jobs:
       - build
 
     runs-on: ubuntu-latest
-
+    outputs:
+      ARTIFACTS_LIST: ${{ steps.list-downloaded-artifacts.outputs.ARTIFACTS_LIST }}
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v2

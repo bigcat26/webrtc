@@ -26,8 +26,7 @@ jobs:
           echo "WebRTC repository:  ${WEBRTC_REPOSITORY}"
           echo "WebRTC git commit:  ${GIT_COMMIT}"
 
-          echo ::set-env name=revision::${GIT_COMMIT}
-        # echo "revision=${GIT_COMMIT}" >> $GITHUB_OUTPUT
+          echo "REVISION=${GIT_COMMIT}" >> $GITHUB_OUTPUT
 
   build:
     needs: pre_build
@@ -173,7 +172,7 @@ jobs:
           set -x
           gclient config --name src --unmanaged ${WEBRTC_REPOSITORY}
           echo 'target_os = ${{ matrix.target_os }}' >> .gclient
-          gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ env.revision }}
+          gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ env.REVISION }}
 
       - name: Configure WebRTC
         run: |
@@ -336,7 +335,7 @@ jobs:
       - name: List downloaded artifacts
         run: |
           ARTIFACTS_LIST=$(find . -name "*.zip")
-          echo ::set-env name=ARTIFACTS_LIST::${ARTIFACTS_LIST}
+          echo "ARTIFACTS_LIST=${ARTIFACTS_LIST}" >> $GITHUB_OUTPUT
 
           for artifact in ARTIFACTS_LIST; do
             echo artifact found: ${artifact}

@@ -330,36 +330,38 @@ jobs:
       - build
 
     runs-on: ubuntu-latest
-    outputs:
-      ARTIFACTS_LIST: ${{ steps.list-downloaded-artifacts.outputs.ARTIFACTS_LIST }}
+
+    # outputs:
+    #   ARTIFACTS_LIST: ${{ steps.list-downloaded-artifacts.outputs.ARTIFACTS_LIST }}
+
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v2
 
-      - name: List downloaded artifacts
-        id: list-downloaded-artifacts
-        run: |
-          ls -laR
-          ARTIFACTS_LIST=$(find . -name "*.zip")
-          echo "ARTIFACTS_LIST=${ARTIFACTS_LIST}" >> $GITHUB_OUTPUT
+      # - name: List downloaded artifacts
+      #   id: list-downloaded-artifacts
+      #   run: |
+      #     ls -laR
+      #     ARTIFACTS_LIST=$(find . -name "*.zip" -exec basename {} \;)
+      #     echo "ARTIFACTS_LIST=${ARTIFACTS_LIST}" >> $GITHUB_OUTPUT
 
-          for artifact in ${ARTIFACTS_LIST}; do
-            echo artifact found: ${artifact}
-          done
+      #     for artifact in ${ARTIFACTS_LIST}; do
+      #       echo artifact found: ${artifact}
+      #     done
 
-      - name: Create release
-        id: create-release
-        uses: actions/create-release@v1
+      # - name: Create release
+      #   id: create-release
+      #   uses: actions/create-release@v1
+      #   with:
+      #     draft: true
+      #     prerelease: true
+      #     release_name: ${{ env.WEBRTC_RELEASE }}
+      #     tag_name: ${{ env.WEBRTC_RELEASE }}
+
+      - name: Release assets
+        uses: softprops/action-gh-release@v1
         with:
           draft: true
           prerelease: true
-          release_name: ${{ env.WEBRTC_RELEASE }}
           tag_name: ${{ env.WEBRTC_RELEASE }}
-
-      - name: upload release assets
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create-release.outputs.upload_url }}
-          asset_path: ${{ steps.list-downloaded-artifacts.outputs.ARTIFACTS_LIST }}
-          asset_name: ${{ env.WEBRTC_RELEASE }}
-          asset_content_type: application/gzip
+          files: artifact/*.zip

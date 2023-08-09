@@ -123,7 +123,6 @@ jobs:
     runs-on: ${{ matrix.runs_on }}
 
     env:
-      # OUTPUT_NAME: WebRTC${{ matrix.tag }}-${{WEBRTC_RELEASE}}-${{ matrix.os }}-${{ matrix.cpu }}
       GNARGS: >-
         target_os="${{ matrix.os }}"
         target_cpu="${{ matrix.cpu }}"
@@ -186,29 +185,30 @@ jobs:
           cd ${GITHUB_WORKSPACE}/src
           ninja -v -C out
 
-      # - name: Show iOS artifacts
-      #   if: ${{ matrix.os == 'ios' }}
-      #   run: |
-      #     ls -laR ${GITHUB_WORKSPACE}/src/out/
-
       - name: Move output files
         run: |
+          pwd
+          ls -laR src/out/
           if [ -f src/out/lib.java/sdk/android/libwebrtc.jar ]; then
+            echo "libwebrtc.jar found"
             mkdir -p jar
             mv src/out/lib.java/sdk/android/libwebrtc.jar jar
           fi
 
           if [ -f src/out/libjingle_peerconnection_so.so ]; then
+            echo "libjingle_peerconnection_so.so found"
             mkdir -p bin
             mv src/out/libjingle_peerconnection_so.so bin
           fi
 
           if [ -f src/out/obj/libwebrtc.a ]; then
+            echo "libwebrtc.a found"
             mkdir -p lib
             mv src/out/obj/libwebrtc.a lib
           fi
 
           if [ -d src/out/WebRTC.framework ]; then
+            echo "WebRTC.framework found"
             mkdir -p framework
             mv src/out/WebRTC.framework framework
           fi

@@ -191,19 +191,6 @@ jobs:
       #   run: |
       #     ls -laR ${GITHUB_WORKSPACE}/src/out/
 
-      # - name: build for iphoneos
-      #   if: ${{ matrix.target_os == 'iphoneos' }}
-      #   run: echo ok
-
-      # - name: Upload JAR & JNI library
-      #   uses: actions/upload-artifact@v3
-      #   if: ${{ matrix.os == 'android' }}
-      #   with:
-      #     name: ${{ env.OUTPUT_NAME }}
-      #     path: |
-      #       src/out/lib.java/sdk/android/libwebrtc.jar 
-      #       src/out/libjingle_peerconnection_so.so
-
       - name: Move output files
         run: |
           if [ -f src/out/lib.java/sdk/android/libwebrtc.jar ]; then
@@ -230,14 +217,6 @@ jobs:
         run: |
           find src \
             \( \
-              -path "./jar/*" -o \
-              -path "./bin/*" -o \
-              -path "./lib/*" -o \
-              -path "./framework/*" -o \
-              -name "*.h" \
-            \) \
-            -prune -o \
-            \( \
               -path "./src/out" -o \
               -path "./src/ios" -o \
               -path "./src/sdk" -o \
@@ -258,6 +237,14 @@ jobs:
               -path "./src/third_party/hunspell" -o \
               -path "./src/third_party/icu" -o \
               -path "./src/third_party/khronos" \
+            \) \
+            -prune -o \
+            \( \
+              -path "./jar/*" -o \
+              -path "./bin/*" -o \
+              -path "./lib/*" -o \
+              -path "./framework/*" -o \
+              -name "*.h" \
             \) \
             | zip -rvy9@ WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
 
@@ -363,5 +350,6 @@ jobs:
         with:
           draft: true
           prerelease: true
+          name: ${{ env.WEBRTC_RELEASE }}
           tag_name: ${{ env.WEBRTC_RELEASE }}
           files: artifact/*.zip

@@ -217,35 +217,36 @@ jobs:
         run: |
           find src \
             \( \
-              -path "./src/out" -o \
-              -path "./src/ios" -o \
-              -path "./src/sdk" -o \
-              -path "./src/examples" -o \
-              -path "./src/test" -o \
-              -path "./src/build" -o \
-              -path "./src/buildtools" -o \
-              -path "./src/third_party/blink" -o \
-              -path "./src/third_party/llvm-build" -o \
-              -path "./src/third_party/win_build_output" -o \
-              -path "./src/third_party/android_ndk" -o \
-              -path "./src/third_party/catapult" -o \
-              -path "./src/third_party/googletest" -o \
-              -path "./src/third_party/android_deps" -o \
-              -path "./src/third_party/android_sdk" -o \
-              -path "./src/third_party/crashpad" -o \
-              -path "./src/third_party/perfetto" -o \
-              -path "./src/third_party/hunspell" -o \
-              -path "./src/third_party/icu" -o \
-              -path "./src/third_party/khronos" \
+              -path "src/out" -o \
+              -path "src/ios" -o \
+              -path "src/sdk" -o \
+              -path "src/examples" -o \
+              -path "src/test" -o \
+              -path "src/build" -o \
+              -path "src/buildtools" -o \
+              -path "src/third_party/blink" -o \
+              -path "src/third_party/llvm-build" -o \
+              -path "src/third_party/win_build_output" -o \
+              -path "src/third_party/android_ndk" -o \
+              -path "src/third_party/catapult" -o \
+              -path "src/third_party/googletest" -o \
+              -path "src/third_party/android_deps" -o \
+              -path "src/third_party/android_sdk" -o \
+              -path "src/third_party/crashpad" -o \
+              -path "src/third_party/perfetto" -o \
+              -path "src/third_party/hunspell" -o \
+              -path "src/third_party/icu" -o \
+              -path "src/third_party/khronos" \
             \) \
             -prune -o \
             \( \
-              -path "./jar/*" -o \
-              -path "./bin/*" -o \
-              -path "./lib/*" -o \
-              -path "./framework/*" -o \
+              -path "jar/*" -o \
+              -path "bin/*" -o \
+              -path "lib/*" -o \
+              -path "framework/*" -o \
               -name "*.h" \
             \) \
+            -print \
             | zip -rvy9@ WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
 
       - name: Upload artifacts

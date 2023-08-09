@@ -192,26 +192,28 @@ jobs:
           if [ -f src/out/lib.java/sdk/android/libwebrtc.jar ]; then
             echo "libwebrtc.jar found"
             mkdir -p jar
-            mv src/out/lib.java/sdk/android/libwebrtc.jar jar
+            cp -vf src/out/lib.java/sdk/android/libwebrtc.jar jar/
           fi
 
           if [ -f src/out/libjingle_peerconnection_so.so ]; then
             echo "libjingle_peerconnection_so.so found"
             mkdir -p bin
-            mv src/out/libjingle_peerconnection_so.so bin
+            cp -vf src/out/libjingle_peerconnection_so.so bin/
           fi
 
           if [ -f src/out/obj/libwebrtc.a ]; then
             echo "libwebrtc.a found"
             mkdir -p lib
-            mv src/out/obj/libwebrtc.a lib
+            cp -vf src/out/obj/libwebrtc.a lib/
           fi
 
           if [ -d src/out/WebRTC.framework ]; then
             echo "WebRTC.framework found"
             mkdir -p framework
-            mv src/out/WebRTC.framework framework
+            cp -vf src/out/WebRTC.framework framework/
           fi
+
+          ls -l
 
       - name: Create archive
         run: |
@@ -252,8 +254,8 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          # name: WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
           path: WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
+          retention-days: 5
 
       #     name: WebRTC${{ matrix.tag }}-${{ env.WEBRTC_RELEASE }}-${{ matrix.os }}-${{ matrix.cpu }}.zip
       #     path: |
@@ -326,16 +328,15 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v2
 
-      # - name: List downloaded artifacts
-      #   id: list-downloaded-artifacts
-      #   run: |
-      #     ls -laR
-      #     ARTIFACTS_LIST=$(find . -name "*.zip" -exec basename {} \;)
-      #     echo "ARTIFACTS_LIST=${ARTIFACTS_LIST}" >> $GITHUB_OUTPUT
+      - name: Create assets list
+        id: create-assets-list
+        run: |
+          ARTIFACTS_LIST=$(find artifact -name '*.zip' | tr '\n' ' ')
+          echo "ARTIFACTS_LIST=${ARTIFACTS_LIST}" >> $GITHUB_OUTPUT
 
-      #     for artifact in ${ARTIFACTS_LIST}; do
-      #       echo artifact found: ${artifact}
-      #     done
+          for artifact in ${ARTIFACTS_LIST}; do
+            echo artifact found: ${artifact}
+          done
 
       # - name: Create release
       #   id: create-release
@@ -353,4 +354,4 @@ jobs:
           prerelease: true
           name: ${{ env.WEBRTC_RELEASE }}
           tag_name: ${{ env.WEBRTC_RELEASE }}
-          files: artifact/*.zip
+          files: ${{ steps.create-assets-list.outputs.ARTIFACTS_LIST }}

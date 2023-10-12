@@ -1,0 +1,448 @@
+From 2f1c4e59687f5242a3b620ff9c139a9bd8779bd8 Mon Sep 17 00:00:00 2001
+From: chris <rc.local@qq.com>
+Date: Thu, 17 Mar 2022 02:20:55 +0800
+Subject: [PATCH] add h264, hevc, mp4, network support
+
+---
+ .../config/Chrome/android/arm-neon/config.h   | 30 +++++++++--
+ chromium/config/Chrome/android/arm64/config.h | 30 +++++++++--
+ chromium/config/Chrome/linux/arm/config.h     | 30 +++++++++--
+ chromium/config/Chrome/linux/arm64/config.h   | 44 +++++++++++++++-
+ chromium/config/Chrome/linux/x64/config.h     | 30 +++++++++--
+ .../Chrome/linux/x64/libavcodec/bsf_list.c    |  2 +
+ .../linux/x64/libavformat/demuxer_list.c      |  1 +
+ .../linux/x64/libavformat/protocol_list.c     |  5 ++
+ ffmpeg_generated.gni                          | 51 +++++++++++++++++++
+ 9 files changed, 201 insertions(+), 22 deletions(-)
+
+diff --git a/chromium/config/Chrome/android/arm-neon/config.h b/chromium/config/Chrome/android/arm-neon/config.h
+index 82788ddc5b..9775e8b14f 100644
+--- a/chromium/config/Chrome/android/arm-neon/config.h
++++ b/chromium/config/Chrome/android/arm-neon/config.h
+@@ -390,8 +390,8 @@
+ #define HAVE_KCVIMAGEBUFFERCOLORPRIMARIES_ITU_R_2020 0
+ #define HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_ITU_R_2020 0
+ #define HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_SMPTE_ST_428_1 0
+-#define HAVE_SOCKLEN_T 0
+-#define HAVE_STRUCT_ADDRINFO 0
++#define HAVE_SOCKLEN_T 1
++#define HAVE_STRUCT_ADDRINFO 1
+ #define HAVE_STRUCT_GROUP_SOURCE_REQ 0
+ #define HAVE_STRUCT_IP_MREQ_SOURCE 0
+ #define HAVE_STRUCT_IPV6_MREQ 0
+@@ -401,7 +401,7 @@
+ #define HAVE_STRUCT_SCTP_EVENT_SUBSCRIBE 0
+ #define HAVE_STRUCT_SOCKADDR_IN6 0
+ #define HAVE_STRUCT_SOCKADDR_SA_LEN 0
+-#define HAVE_STRUCT_SOCKADDR_STORAGE 0
++#define HAVE_STRUCT_SOCKADDR_STORAGE 1
+ #define HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC 1
+ #define HAVE_STRUCT_V4L2_FRMIVALENUM_DISCRETE 0
+ #define HAVE_GZIP 1
+@@ -622,7 +622,7 @@
+ #define CONFIG_LSP 0
+ #define CONFIG_MDCT 0
+ #define CONFIG_PIXELUTILS 0
+-#define CONFIG_NETWORK 0
++#define CONFIG_NETWORK 1
+ #define CONFIG_RDFT 1
+ #define CONFIG_AUTODETECT 0
+ #define CONFIG_FONTCONFIG 0
+@@ -726,7 +726,7 @@
+ #define CONFIG_RANGECODER 0
+ #define CONFIG_RIFFDEC 1
+ #define CONFIG_RIFFENC 0
+-#define CONFIG_RTPDEC 0
++#define CONFIG_RTPDEC 1
+ #define CONFIG_RTPENC_CHAIN 0
+ #define CONFIG_RV34DSP 0
+ #define CONFIG_SCENE_SAD 0
+@@ -746,4 +746,24 @@
+ #define CONFIG_VP8DSP 0
+ #define CONFIG_WMA_FREQS 0
+ #define CONFIG_WMV2DSP 0
++#define CONFIG_H264_DECODER 1
++#define CONFIG_AAC_DECODER 1
++#define CONFIG_H264_DECODER 1
++#define CONFIG_AAC_DECODER 1
++#define CONFIG_MP3_DECODER 1
++#define CONFIG_PCM_ALAW_DECODER 1
++#define CONFIG_PCM_MULAW_DECODER 1
++#define CONFIG_AAC_PARSER 1
++#define CONFIG_H264_PARSER 1
++#define CONFIG_HEVC_PARSER 1
++#define CONFIG_OPUS_PARSER 1
++#define CONFIG_VP8_PARSER 1
++#define CONFIG_VP9_PARSER 1
++#define CONFIG_AAC_DEMUXER 1
++#define CONFIG_AC3_DEMUXER 1
++#define CONFIG_MOV_DEMUXER 1
++#define CONFIG_MP3_DEMUXER 1
++#define CONFIG_RTSP_DEMUXER 1
++#define CONFIG_WAV_DEMUXER 1
++#define CONFIG_FILE_PROTOCOL 1
+ #endif /* FFMPEG_CONFIG_H */
+diff --git a/chromium/config/Chrome/android/arm64/config.h b/chromium/config/Chrome/android/arm64/config.h
+index e01ac5fb37..e02dc837ec 100644
+--- a/chromium/config/Chrome/android/arm64/config.h
++++ b/chromium/config/Chrome/android/arm64/config.h
+@@ -390,8 +390,8 @@
+ #define HAVE_KCVIMAGEBUFFERCOLORPRIMARIES_ITU_R_2020 0
+ #define HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_ITU_R_2020 0
+ #define HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_SMPTE_ST_428_1 0
+-#define HAVE_SOCKLEN_T 0
+-#define HAVE_STRUCT_ADDRINFO 0
++#define HAVE_SOCKLEN_T 1
++#define HAVE_STRUCT_ADDRINFO 1
+ #define HAVE_STRUCT_GROUP_SOURCE_REQ 0
+ #define HAVE_STRUCT_IP_MREQ_SOURCE 0
+ #define HAVE_STRUCT_IPV6_MREQ 0
+@@ -401,7 +401,7 @@
+ #define HAVE_STRUCT_SCTP_EVENT_SUBSCRIBE 0
+ #define HAVE_STRUCT_SOCKADDR_IN6 0
+ #define HAVE_STRUCT_SOCKADDR_SA_LEN 0
+-#define HAVE_STRUCT_SOCKADDR_STORAGE 0
++#define HAVE_STRUCT_SOCKADDR_STORAGE 1
+ #define HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC 1
+ #define HAVE_STRUCT_V4L2_FRMIVALENUM_DISCRETE 0
+ #define HAVE_GZIP 1
+@@ -622,7 +622,7 @@
+ #define CONFIG_LSP 0
+ #define CONFIG_MDCT 0
+ #define CONFIG_PIXELUTILS 0
+-#define CONFIG_NETWORK 0
++#define CONFIG_NETWORK 1
+ #define CONFIG_RDFT 1
+ #define CONFIG_AUTODETECT 0
+ #define CONFIG_FONTCONFIG 0
+@@ -726,7 +726,7 @@
+ #define CONFIG_RANGECODER 0
+ #define CONFIG_RIFFDEC 1
+ #define CONFIG_RIFFENC 0
+-#define CONFIG_RTPDEC 0
++#define CONFIG_RTPDEC 1
+ #define CONFIG_RTPENC_CHAIN 0
+ #define CONFIG_RV34DSP 0
+ #define CONFIG_SCENE_SAD 0
+@@ -746,4 +746,24 @@
+ #define CONFIG_VP8DSP 0
+ #define CONFIG_WMA_FREQS 0
+ #define CONFIG_WMV2DSP 0
++#define CONFIG_H264_DECODER 1
++#define CONFIG_AAC_DECODER 1
++#define CONFIG_H264_DECODER 1
++#define CONFIG_AAC_DECODER 1
++#define CONFIG_MP3_DECODER 1
++#define CONFIG_PCM_ALAW_DECODER 1
++#define CONFIG_PCM_MULAW_DECODER 1
++#define CONFIG_AAC_PARSER 1
++#define CONFIG_H264_PARSER 1
++#define CONFIG_HEVC_PARSER 1
++#define CONFIG_OPUS_PARSER 1
++#define CONFIG_VP8_PARSER 1
++#define CONFIG_VP9_PARSER 1
++#define CONFIG_AAC_DEMUXER 1
++#define CONFIG_AC3_DEMUXER 1
++#define CONFIG_MOV_DEMUXER 1
++#define CONFIG_MP3_DEMUXER 1
++#define CONFIG_RTSP_DEMUXER 1
++#define CONFIG_WAV_DEMUXER 1
++#define CONFIG_FILE_PROTOCOL 1
+ #endif /* FFMPEG_CONFIG_H */
+diff --git a/chromium/config/Chrome/linux/arm/config.h b/chromium/config/Chrome/linux/arm/config.h
+index bfd2b9704c..893bebbf59 100644
+--- a/chromium/config/Chrome/linux/arm/config.h
++++ b/chromium/config/Chrome/linux/arm/config.h
+@@ -390,8 +390,8 @@
+ #define HAVE_KCVIMAGEBUFFERCOLORPRIMARIES_ITU_R_2020 0
+ #define HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_ITU_R_2020 0
+ #define HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_SMPTE_ST_428_1 0
+-#define HAVE_SOCKLEN_T 0
+-#define HAVE_STRUCT_ADDRINFO 0
++#define HAVE_SOCKLEN_T 1
++#define HAVE_STRUCT_ADDRINFO 1
+ #define HAVE_STRUCT_GROUP_SOURCE_REQ 0
+ #define HAVE_STRUCT_IP_MREQ_SOURCE 0
+ #define HAVE_STRUCT_IPV6_MREQ 0
+@@ -401,7 +401,7 @@
+ #define HAVE_STRUCT_SCTP_EVENT_SUBSCRIBE 0
+ #define HAVE_STRUCT_SOCKADDR_IN6 0
+ #define HAVE_STRUCT_SOCKADDR_SA_LEN 0
+-#define HAVE_STRUCT_SOCKADDR_STORAGE 0
++#define HAVE_STRUCT_SOCKADDR_STORAGE 1
+ #define HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC 1
+ #define HAVE_STRUCT_V4L2_FRMIVALENUM_DISCRETE 0
+ #define HAVE_GZIP 1
+@@ -622,7 +622,7 @@
+ #define CONFIG_LSP 0
+ #define CONFIG_MDCT 0
+ #define CONFIG_PIXELUTILS 0
+-#define CONFIG_NETWORK 0
++#define CONFIG_NETWORK 1
+ #define CONFIG_RDFT 1
+ #define CONFIG_AUTODETECT 0
+ #define CONFIG_FONTCONFIG 0
+@@ -726,7 +726,7 @@
+ #define CONFIG_RANGECODER 0
+ #define CONFIG_RIFFDEC 1
+ #define CONFIG_RIFFENC 0
+-#define CONFIG_RTPDEC 0
++#define CONFIG_RTPDEC 1
+ #define CONFIG_RTPENC_CHAIN 0
+ #define CONFIG_RV34DSP 0
+ #define CONFIG_SCENE_SAD 0
+@@ -746,4 +746,24 @@
+ #define CONFIG_VP8DSP 1
+ #define CONFIG_WMA_FREQS 0
+ #define CONFIG_WMV2DSP 0
++#define CONFIG_H264_DECODER 1
++#define CONFIG_AAC_DECODER 1
++#define CONFIG_H264_DECODER 1
++#define CONFIG_AAC_DECODER 1
++#define CONFIG_MP3_DECODER 1
++#define CONFIG_PCM_ALAW_DECODER 1
++#define CONFIG_PCM_MULAW_DECODER 1
++#define CONFIG_AAC_PARSER 1
++#define CONFIG_H264_PARSER 1
++#define CONFIG_HEVC_PARSER 1
++#define CONFIG_OPUS_PARSER 1
++#define CONFIG_VP8_PARSER 1
++#define CONFIG_VP9_PARSER 1
++#define CONFIG_AAC_DEMUXER 1
++#define CONFIG_AC3_DEMUXER 1
++#define CONFIG_MOV_DEMUXER 1
++#define CONFIG_MP3_DEMUXER 1
++#define CONFIG_RTSP_DEMUXER 1
++#define CONFIG_WAV_DEMUXER 1
++#define CONFIG_FILE_PROTOCOL 1
+ #endif /* FFMPEG_CONFIG_H */
+diff --git a/chromium/config/Chrome/linux/arm64/config.h b/chromium/config/Chrome/linux/arm64/config.h
+index b8d21fafaf..33654147a6 100644
+--- a/chromium/config/Chrome/linux/arm64/config.h
++++ b/chromium/config/Chrome/linux/arm64/config.h
+@@ -622,7 +622,7 @@
+ #define CONFIG_LSP 0
+ #define CONFIG_MDCT 0
+ #define CONFIG_PIXELUTILS 0
+-#define CONFIG_NETWORK 0
++#define CONFIG_NETWORK 1
+ #define CONFIG_RDFT 1
+ #define CONFIG_AUTODETECT 0
+ #define CONFIG_FONTCONFIG 0
+@@ -726,7 +726,7 @@
+ #define CONFIG_RANGECODER 0
+ #define CONFIG_RIFFDEC 1
+ #define CONFIG_RIFFENC 0
+-#define CONFIG_RTPDEC 0
++#define CONFIG_RTPDEC 1
+ #define CONFIG_RTPENC_CHAIN 0
+ #define CONFIG_RV34DSP 0
+ #define CONFIG_SCENE_SAD 0
+@@ -746,4 +746,44 @@
+ #define CONFIG_VP8DSP 1
+ #define CONFIG_WMA_FREQS 0
+ #define CONFIG_WMV2DSP 0
++#define CONFIG_H264_DECODER 1
++#define CONFIG_AAC_DECODER 1
++#define CONFIG_H264_DECODER 1
++#define CONFIG_AAC_DECODER 1
++#define CONFIG_MP3_DECODER 1
++#define CONFIG_PCM_ALAW_DECODER 1
++#define CONFIG_PCM_MULAW_DECODER 1
++#define CONFIG_AAC_PARSER 1
++#define CONFIG_H264_PARSER 1
++#define CONFIG_HEVC_PARSER 1
++#define CONFIG_OPUS_PARSER 1
++#define CONFIG_VP8_PARSER 1
++#define CONFIG_VP9_PARSER 1
++#define CONFIG_AAC_DEMUXER 1
++#define CONFIG_AC3_DEMUXER 1
++#define CONFIG_MOV_DEMUXER 1
++#define CONFIG_MP3_DEMUXER 1
++#define CONFIG_RTSP_DEMUXER 1
++#define CONFIG_WAV_DEMUXER 1
++#define CONFIG_FILE_PROTOCOL 1
++#define CONFIG_H264_DECODER 1
++#define CONFIG_AAC_DECODER 1
++#define CONFIG_H264_DECODER 1
++#define CONFIG_AAC_DECODER 1
++#define CONFIG_MP3_DECODER 1
++#define CONFIG_PCM_ALAW_DECODER 1
++#define CONFIG_PCM_MULAW_DECODER 1
++#define CONFIG_AAC_PARSER 1
++#define CONFIG_H264_PARSER 1
++#define CONFIG_HEVC_PARSER 1
++#define CONFIG_OPUS_PARSER 1
++#define CONFIG_VP8_PARSER 1
++#define CONFIG_VP9_PARSER 1
++#define CONFIG_AAC_DEMUXER 1
++#define CONFIG_AC3_DEMUXER 1
++#define CONFIG_MOV_DEMUXER 1
++#define CONFIG_MP3_DEMUXER 1
++#define CONFIG_RTSP_DEMUXER 1
++#define CONFIG_WAV_DEMUXER 1
++#define CONFIG_FILE_PROTOCOL 1
+ #endif /* FFMPEG_CONFIG_H */
+diff --git a/chromium/config/Chrome/linux/x64/config.h b/chromium/config/Chrome/linux/x64/config.h
+index be3560c4ce..5c907582bc 100644
+--- a/chromium/config/Chrome/linux/x64/config.h
++++ b/chromium/config/Chrome/linux/x64/config.h
+@@ -390,8 +390,8 @@
+ #define HAVE_KCVIMAGEBUFFERCOLORPRIMARIES_ITU_R_2020 0
+ #define HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_ITU_R_2020 0
+ #define HAVE_KCVIMAGEBUFFERTRANSFERFUNCTION_SMPTE_ST_428_1 0
+-#define HAVE_SOCKLEN_T 0
+-#define HAVE_STRUCT_ADDRINFO 0
++#define HAVE_SOCKLEN_T 1
++#define HAVE_STRUCT_ADDRINFO 1
+ #define HAVE_STRUCT_GROUP_SOURCE_REQ 0
+ #define HAVE_STRUCT_IP_MREQ_SOURCE 0
+ #define HAVE_STRUCT_IPV6_MREQ 0
+@@ -401,7 +401,7 @@
+ #define HAVE_STRUCT_SCTP_EVENT_SUBSCRIBE 0
+ #define HAVE_STRUCT_SOCKADDR_IN6 0
+ #define HAVE_STRUCT_SOCKADDR_SA_LEN 0
+-#define HAVE_STRUCT_SOCKADDR_STORAGE 0
++#define HAVE_STRUCT_SOCKADDR_STORAGE 1
+ #define HAVE_STRUCT_STAT_ST_MTIM_TV_NSEC 1
+ #define HAVE_STRUCT_V4L2_FRMIVALENUM_DISCRETE 0
+ #define HAVE_GZIP 1
+@@ -622,7 +622,7 @@
+ #define CONFIG_LSP 0
+ #define CONFIG_MDCT 0
+ #define CONFIG_PIXELUTILS 0
+-#define CONFIG_NETWORK 0
++#define CONFIG_NETWORK 1
+ #define CONFIG_RDFT 1
+ #define CONFIG_AUTODETECT 0
+ #define CONFIG_FONTCONFIG 0
+@@ -726,7 +726,7 @@
+ #define CONFIG_RANGECODER 0
+ #define CONFIG_RIFFDEC 1
+ #define CONFIG_RIFFENC 0
+-#define CONFIG_RTPDEC 0
++#define CONFIG_RTPDEC 1
+ #define CONFIG_RTPENC_CHAIN 0
+ #define CONFIG_RV34DSP 0
+ #define CONFIG_SCENE_SAD 0
+@@ -746,4 +746,24 @@
+ #define CONFIG_VP8DSP 1
+ #define CONFIG_WMA_FREQS 0
+ #define CONFIG_WMV2DSP 0
++#define CONFIG_H264_DECODER 1
++#define CONFIG_AAC_DECODER 1
++#define CONFIG_H264_DECODER 1
++#define CONFIG_AAC_DECODER 1
++#define CONFIG_MP3_DECODER 1
++#define CONFIG_PCM_ALAW_DECODER 1
++#define CONFIG_PCM_MULAW_DECODER 1
++#define CONFIG_AAC_PARSER 1
++#define CONFIG_H264_PARSER 1
++#define CONFIG_HEVC_PARSER 1
++#define CONFIG_OPUS_PARSER 1
++#define CONFIG_VP8_PARSER 1
++#define CONFIG_VP9_PARSER 1
++#define CONFIG_AAC_DEMUXER 1
++#define CONFIG_AC3_DEMUXER 1
++#define CONFIG_MOV_DEMUXER 1
++#define CONFIG_MP3_DEMUXER 1
++#define CONFIG_RTSP_DEMUXER 1
++#define CONFIG_WAV_DEMUXER 1
++#define CONFIG_FILE_PROTOCOL 1
+ #endif /* FFMPEG_CONFIG_H */
+diff --git a/chromium/config/Chrome/linux/x64/libavcodec/bsf_list.c b/chromium/config/Chrome/linux/x64/libavcodec/bsf_list.c
+index 7ff70c6e2d..13858c5d14 100644
+--- a/chromium/config/Chrome/linux/x64/libavcodec/bsf_list.c
++++ b/chromium/config/Chrome/linux/x64/libavcodec/bsf_list.c
+@@ -1,2 +1,4 @@
+ static const FFBitStreamFilter * const bitstream_filters[] = {
++    &ff_h264_mp4toannexb_bsf,
++    &ff_hevc_mp4toannexb_bsf,
+     NULL };
+diff --git a/chromium/config/Chrome/linux/x64/libavformat/demuxer_list.c b/chromium/config/Chrome/linux/x64/libavformat/demuxer_list.c
+index 920b22bfa7..f63de3dfa7 100644
+--- a/chromium/config/Chrome/linux/x64/libavformat/demuxer_list.c
++++ b/chromium/config/Chrome/linux/x64/libavformat/demuxer_list.c
+@@ -6,4 +6,5 @@ static const AVInputFormat * const demuxer_list[] = {
+     &ff_mp3_demuxer,
+     &ff_ogg_demuxer,
+     &ff_wav_demuxer,
++    &ff_rtsp_demuxer,
+     NULL };
+diff --git a/chromium/config/Chrome/linux/x64/libavformat/protocol_list.c b/chromium/config/Chrome/linux/x64/libavformat/protocol_list.c
+index 247e1e4c3a..5634cda9f3 100644
+--- a/chromium/config/Chrome/linux/x64/libavformat/protocol_list.c
++++ b/chromium/config/Chrome/linux/x64/libavformat/protocol_list.c
+@@ -1,2 +1,7 @@
++
+ static const URLProtocol * const url_protocols[] = {
++    &ff_file_protocol, 
++    &ff_rtp_protocol,
++    &ff_tcp_protocol, 
++    &ff_udp_protocol, 
+     NULL };
+diff --git a/ffmpeg_generated.gni b/ffmpeg_generated.gni
+index 7c6b7d7e97..f314d42db7 100644
+--- a/ffmpeg_generated.gni
++++ b/ffmpeg_generated.gni
+@@ -140,6 +140,57 @@ if ((is_android && current_cpu == "arm" && arm_use_neon) || (is_android && curre
+     "libavformat/url.c",
+     "libavformat/vorbiscomment.c",
+     "libavformat/wavdec.c",
++    "libavformat/file.c",
++    "libavformat/rtsp.c",
++    "libavformat/rtspdec.c",
++    "libavformat/http.c",
++    "libavformat/httpauth.c",
++    "libavformat/network.c",
++    "libavformat/rtpproto.c",
++    "libavformat/rdt.c",
++    "libavformat/urldecode.c",
++    "libavformat/ip.c",
++    "libavformat/tcp.c",
++    "libavformat/udp.c",
++    "libavformat/mpegts.c",
++    "libavformat/rtp.c",
++    "libavformat/rtpdec.c",
++    "libavformat/rtpdec_ac3.c",
++    "libavformat/rtpdec_amr.c",
++    "libavformat/rtpdec_asf.c",
++    "libavformat/rtpdec_dv.c",
++    "libavformat/rtpdec_g726.c",
++    "libavformat/rtpdec_h261.c",
++    "libavformat/rtpdec_h263.c",
++    "libavformat/rtpdec_h263_rfc2190.c",
++    "libavformat/rtpdec_h264.c",
++    "libavformat/rtpdec_hevc.c",
++    "libavformat/rtpdec_ilbc.c",
++    "libavformat/rtpdec_jpeg.c",
++    "libavformat/rtpdec_latm.c",
++    "libavformat/rtpdec_mpa_robust.c",
++    "libavformat/rtpdec_mpeg12.c",
++    "libavformat/rtpdec_mpeg4.c",
++    "libavformat/rtpdec_mpegts.c",
++    "libavformat/rtpdec_qcelp.c",
++    "libavformat/rtpdec_qdm2.c",
++    "libavformat/rtpdec_qt.c",
++    "libavformat/rtpdec_rfc4175.c",
++    "libavformat/rtpdec_svq3.c",
++    "libavformat/rtpdec_vc2hq.c",
++    "libavformat/rtpdec_vp8.c",
++    "libavformat/rtpdec_vp9.c",
++    "libavformat/rtpdec_xiph.c",
++    "libavformat/asf.c",
++    "libavformat/asf_tags.c",
++    "libavformat/rm.c",
++    "libavformat/rmdec.c",
++    "libavformat/srtp.c",
++    "libavcodec/jpegtables.c",
++    "libavcodec/h264_mp4toannexb_bsf.c",
++    "libavcodec/hevc_mp4toannexb_bsf.c",
++    "libavutil/hmac.c",
++    "libavutil/sha512.c",
+     "libavutil/aes.c",
+     "libavutil/aes_ctr.c",
+     "libavutil/ambient_viewing_environment.c",
+-- 
+2.34.1
+

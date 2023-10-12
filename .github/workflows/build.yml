@@ -34,53 +34,53 @@ jobs:
       # max-parallel: 2
       matrix:
         include:
-          - os: linux
-            cpu: x64
-            tag: -DataChannel
-            gnargs: >-
-              is_clang=false
-              libyuv_use_neon=false
-              rtc_enable_protobuf=false
-              rtc_build_with_neon=false
-              rtc_include_internal_audio_device=false
-              rtc_include_pulse_audio=false
-              rtc_libvpx_build_vp9=false
-              rtc_use_gtk=false
-              use_aura=false
-              use_custom_libcxx=false
-              use_dbus=false
-              use_gold=true
-              use_goma=false
-              use_lld=false
-              use_ozone=false
-              use_udev=false
-              use_glib=false
-              rtc_use_x11=false
-              use_x11=false
-              rtc_use_pipewire=false
-              enable_paint_preview=false
-              libyuv_disable_jpeg=true
-              libyuv_use_gflags=false
-              enable_libaom=false
-              rtc_enable_libevent=false
-              rtc_build_libevent=false
-              rtc_exclude_audio_processing_module=true
-              rtc_include_builtin_audio_codecs=false
-              rtc_include_builtin_video_codecs=false
-              libyuv_use_neon=false
-              rtc_enable_avx2=false
-              rtc_enable_sctp=true
-              rtc_use_h264=false
-              rtc_build_libsrtp=true
-              rtc_build_libvpx=false
-              rtc_build_opus=false
-              rtc_include_ilbc=false
-              rtc_include_opus=false
-              rtc_enable_protobuf=false
-              toolkit_views=false
-              libyuv_include_tests=false
-            target_os: '["linux"]'
-            runs_on: ubuntu-22.04
+          # - os: linux
+          #   cpu: x64
+          #   tag: -DataChannel
+          #   gnargs: >-
+          #     is_clang=false
+          #     libyuv_use_neon=false
+          #     rtc_enable_protobuf=false
+          #     rtc_build_with_neon=false
+          #     rtc_include_internal_audio_device=false
+          #     rtc_include_pulse_audio=false
+          #     rtc_libvpx_build_vp9=false
+          #     rtc_use_gtk=false
+          #     use_aura=false
+          #     use_custom_libcxx=false
+          #     use_dbus=false
+          #     use_gold=true
+          #     use_goma=false
+          #     use_lld=false
+          #     use_ozone=false
+          #     use_udev=false
+          #     use_glib=false
+          #     rtc_use_x11=false
+          #     use_x11=false
+          #     rtc_use_pipewire=false
+          #     enable_paint_preview=false
+          #     libyuv_disable_jpeg=true
+          #     libyuv_use_gflags=false
+          #     enable_libaom=false
+          #     rtc_enable_libevent=false
+          #     rtc_build_libevent=false
+          #     rtc_exclude_audio_processing_module=true
+          #     rtc_include_builtin_audio_codecs=false
+          #     rtc_include_builtin_video_codecs=false
+          #     libyuv_use_neon=false
+          #     rtc_enable_avx2=false
+          #     rtc_enable_sctp=true
+          #     rtc_use_h264=false
+          #     rtc_build_libsrtp=true
+          #     rtc_build_libvpx=false
+          #     rtc_build_opus=false
+          #     rtc_include_ilbc=false
+          #     rtc_include_opus=false
+          #     rtc_enable_protobuf=false
+          #     toolkit_views=false
+          #     libyuv_include_tests=false
+          #   target_os: '["linux"]'
+          #   runs_on: ubuntu-22.04
 
           - os: android
             cpu: arm
@@ -113,12 +113,12 @@ jobs:
           #   target_os: '["ios", "mac"]'
           #   runs_on: macos-latest
 
-          # - os: mac
-          #   cpu: x64
-          #   headers: true
-          #   gnargs: proprietary_codecs=true ios_enable_code_signing=false
-          #   target_os: '["ios", "mac"]'
-          #   runs_on: macos-latest
+          - os: mac
+            cpu: x64
+            headers: true
+            gnargs: proprietary_codecs=true ios_enable_code_signing=false
+            target_os: '["ios", "mac"]'
+            runs_on: macos-latest
 
     runs-on: ${{ matrix.runs_on }}
 
@@ -172,6 +172,11 @@ jobs:
           gclient config --name src --unmanaged ${WEBRTC_REPOSITORY}
           echo 'target_os = ${{ matrix.target_os }}' >> .gclient
           gclient sync --no_bootstrap --shallow --no-history -vv --revision ${{ needs.pre_build.outputs.REVISION }}
+
+      - name: Apply patches
+        run: |
+          cd ${GITHUB_WORKSPACE}/src/third_party/ffmpeg
+          patch -p1 < ${GITHUB_WORKSPACE}/patches/ffmpeg-streaming/0001-add-h264-hevc-mp4-network-support.patch
 
       - name: Configure WebRTC
         run: |

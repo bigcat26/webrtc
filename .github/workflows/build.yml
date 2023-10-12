@@ -113,12 +113,12 @@ jobs:
           #   target_os: '["ios", "mac"]'
           #   runs_on: macos-latest
 
-          - os: mac
-            cpu: x64
-            headers: true
-            gnargs: proprietary_codecs=true ios_enable_code_signing=false
-            target_os: '["ios", "mac"]'
-            runs_on: macos-latest
+          # - os: mac
+          #   cpu: x64
+          #   headers: true
+          #   gnargs: proprietary_codecs=true ios_enable_code_signing=false
+          #   target_os: '["ios", "mac"]'
+          #   runs_on: macos-latest
 
     runs-on: ${{ matrix.runs_on }}
 
@@ -181,6 +181,7 @@ jobs:
       - name: Configure WebRTC
         run: |
           set -x
+          df -h
           cd ${GITHUB_WORKSPACE}/src
           gn gen out --args="${GNARGS}"
 
